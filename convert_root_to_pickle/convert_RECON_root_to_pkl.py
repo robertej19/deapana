@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-A simple script to save Z and X of 6862 nflow project.
-"""
-
+"""code is modified from Sangbaek's initial work on converting root to pandas"""
 import uproot
 import pandas as pd
 import numpy as np
