@@ -25,6 +25,7 @@ from utils.utils import getTheta
 from utils.utils import getEnergy
 from utils.utils import readFile
 from utils import make_histos
+from utils import histo_plotting
 
 
 M = 0.938272081 # target mass
@@ -176,7 +177,6 @@ def makeDVpi0vars(df_epgg):
 
     return df_math_epgg
 
-
 def cutDVpi(df_math_epgg):
     #make dvpi0 pairs
     df_epgg = df_math_epgg
@@ -221,25 +221,32 @@ if __name__ == "__main__":
     parser.add_argument("-f","--fname", help="a single root file to convert into pickles", default="infile.root")
     parser.add_argument("-o","--out", help="a single pickle file name as an output", default="outfile.pkl")
     parser.add_argument("-s","--entry_stop", help="entry_stop to stop reading the root file", default = None)
+    parser.add_argument("-c","--cut", help="use this flag to cut out non-DVPiP events", default=False, action='store_true')
     
     args = parser.parse_args()
 
-    # t ranges:
-    # 0.2 - 0.3, .4, .6, 1.0
-    # xb ranges:
-    # 0.25, 0.3, 0.38
-    # q2 ranges:
-    # 3, 3.5, 4
+    if args.cut:
+        df_recon = pd.read_pickle("data/before_cuts/df_recon.pkl")
+        #Calculate pi0 parameters    
+        df_recon_pi0vars = makeDVpi0vars(df_recon)
+        #Apply exclusivity cuts    
+        df_recon = cutDVpi(df_recon_pi0vars)
+        df_recon.to_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+    else:
+        df_recon = pd.read_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+
+
+
+
+    histo_plotting.make_all_histos(df_recon)
+
+    sys.exit()
+
 
     # #xxxxxxxxxxxxxxxxxxxxxxxxxxx
     # #Push through the generated data
     # #xxxxxxxxxxxxxxxxxxxxxxxxxxx
     #df_gen = pd.read_pickle("test/df_gen.pkl")
-    #df_gen = pd.read_pickle("gen/gen_All.pkl")
-    #df_gen = pd.read_pickle("df_genONLY.pkl")
-    #df_gen = pd.read_pickle("df_gen_only_1.pkl")
-    #df_gen = pd.read_pickle("df_gen_all_9628_files.pkl")
-    #df_recon = pd.read_pickle("df_recon.pkl")
     #df_recon = pd.read_pickle("df_recon_all_9628_files.pkl")
     
     #make plots before cuts are applied
@@ -248,9 +255,12 @@ if __name__ == "__main__":
 
     #df_gen_pi0vars = pd.read_pickle("gen_test_withpi0.pkl")
     #df_gen_pi0vars0 = pd.read_pickle("gen/gen_5_withpi0.pkl")
-    df_gen_pi0vars = pd.read_pickle("recon/df_recon_with_pi0cuts.pkl")
 
-    #df_small_gen = df_after_cuts
+
+    #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    # df_gen_pi0vars = pd.read_pickle("recon/df_recon_with_pi0cuts.pkl")
+
+    df_small_gen = df_after_cuts
     def get_counts(tmin,tmax):
         tmin = tmin
         tmax = tmax
@@ -305,233 +315,7 @@ if __name__ == "__main__":
     sys.exit()
 
     df_small_gen = df_gen_pi0vars0#.query("Gent> 0.6 & Gent<1 & Genphi1>270")
-    #df_small_gen = df_gen_pi0vars
+    df_small_gen = df_gen_pi0vars
 
     ic(df_gen_pi0vars0.columns.values)
     ic(df_gen_pi0vars0)
-
-    x_data = df_small_gen["Genphi1"]
-    y_data = df_small_gen["GenPtheta"]
-    var_names = ["$\phi$ Angle","Proton Angle ($\\theta$)"]
-    ranges = [0,360,100,0,80,120]
-    output_dir = "pics/"
-    lund_q2_xb_title = "Proton Angle ($\\theta$) vs LeptonHadron Plane Angle, Generated Events"
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-    x_data = df_small_gen["Gent"]
-    y_data = df_small_gen["GenPtheta"]
-    var_names = ["t (GeV$^2$)","Proton Angle ($\\theta$)"]
-    ranges = [0,1,100,0,80,120]
-    output_dir = "pics/"
-    lund_q2_xb_title = "Proton Angle ($\\theta$) vs t, Generated Events"
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    # sys.exit()
-
-    # x_data = df_small_gen["GenxB"]
-    # y_data = df_small_gen["GenQ2"]
-    # var_names = ["$x_B$","$Q^2$ (GeV$^2$)"]
-    # ranges = [0,1,100,0,12,120]
-    # output_dir = "pics/"
-    # lund_q2_xb_title = "$Q^2$ vs $x_B$ for Generated Events, High t and phi"
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-
-    
-    # x_data = df_small_gen["GenxB"]
-    # y_data = df_small_gen["GenW"]
-    # var_names = ["$x_B$","W (GeV)"]
-    # ranges = [0,1,100,0,12,120]
-    # output_dir = "pics/"
-    # lund_q2_xb_title = "W vs $x_B$ for Generated Events, High t and phi"
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    # y_data = df_small_gen["Gent"]
-    # x_data = df_small_gen["Genphi1"]
-    # var_names = ["$\phi$","$t$ (GeV$^2$)"]
-    # ranges = [0,360,100,0,1.2,60]
-    # lund_q2_xb_title = "t vs $\phi$ for Generated Events, High t and phi"
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    # y_data = df_small_gen["GenPtheta"]
-    # x_data = df_small_gen["GenPphi"]
-    # var_names = ["$\phi$","$\\theta$"]
-    # ranges = [-180,180,180,0,70,50]
-    # lund_q2_xb_title = "Proton angles for Generated Events, High t and phi"
-
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    # y_data = df_small_gen["GenEtheta"]
-    # x_data = df_small_gen["GenEphi"]
-    # ranges = [-180,180,180,0,40,50]
-    # lund_q2_xb_title = "Electron angles for Generated Events, High t and phi"
-
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-    # y_data = df_small_gen["GenGtheta"]
-    # x_data = df_small_gen["GenGphi"]
-    # ranges = [-180,180,180,0,40,50]
-    # lund_q2_xb_title = "Photon angles for Generated Events, High t and phi"
-
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-    
-#XXXXXXXXXXXXXXXXXXXXXXXXX
-    df_small_gen = df_gen_pi0vars#.query("t> 0.6 & t<1  & phi1>270")
-
-    x_data = df_small_gen["phi1"]
-    y_data = df_small_gen["Ptheta"]
-    var_names = ["$\phi$ Angle","Proton Angle ($\\theta$)"]
-    ranges = [0,360,100,0,80,120]
-    output_dir = "pics/"
-    lund_q2_xb_title = "Proton Angle ($\\theta$) vs LeptonHadron Plane Angle, Recon. Sim Events"
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    sys.exit()
-
-    x_data = df_small_gen["xB"]
-    y_data = df_small_gen["Q2"]
-    var_names = ["$x_B$","$Q^2$ (GeV$^2$)"]
-    ranges = [0,1,100,0,12,120]
-    output_dir = "pics/"
-    lund_q2_xb_title = "$Q^2$ vs $x_B$ for Recon. (Sim) Events, High t and phi"
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-    x_data = df_small_gen["xB"]
-    y_data = df_small_gen["W"]
-    var_names = ["$x_B$","W (GeV)"]
-    ranges = [0,1,100,0,12,120]
-    output_dir = "pics/"
-    lund_q2_xb_title = "W vs $x_B$ for Recon. (Sim) Events, High t and phi"
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    y_data = df_small_gen["t"]
-    x_data = df_small_gen["phi1"]
-    var_names = ["$\phi$","$t$ (GeV$^2$)"]
-    ranges = [0,360,100,0,1.2,60]
-    lund_q2_xb_title = "t vs $\phi$ for Recon. (Sim) Events, High t and phi"
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    #df_small_gen = df_gen_pi0vars.query("GenxB>0.3 & GenxB<0.38 & GenQ2>3 & GenQ2<3.5 & Gent> 0.5 & Gent<1")
-    df_small_gen = df_gen_pi0vars
-    
-    y_data = df_small_gen["Ptheta"]
-    x_data = df_small_gen["Pphi"]
-    var_names = ["$\phi$","$\\theta$"]
-    ranges = [-180,180,180,0,70,50]
-    lund_q2_xb_title = "Proton angles for Recon. (Sim) Events, High t and phi"
-
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    y_data = df_small_gen["Etheta"]
-    x_data = df_small_gen["Ephi"]
-    ranges = [-180,180,180,0,40,50]
-    lund_q2_xb_title = "Electron angles for Recon. (Sim) Events, High t and phi"
-
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-    y_data = df_small_gen["Gtheta"]
-    x_data = df_small_gen["Gphi"]
-    ranges = [-180,180,180,0,40,50]
-    lund_q2_xb_title = "Photon angles for Recon. (Sim) Events, High t and phi"
-
-    make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-                    saveplot=True,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    sys.exit()
-
-    x_data2 = df_small_gen["Genphi1"]
-    var_names = ["phi"]
-    make_histos.plot_1dhist(x_data,var_names,[0,360,20],
-                    saveplot=False,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-    sys.exit()
-
-
-    # #xxxxxxxxxxxxxxxxxxxxxxxxxxx
-    # #Push though the recon data
-    # #xxxxxxxxxxxxxxxxxxxxxxxxxxx
-    
-    # ic(df_recon)
-    # #Calculate pi0 parameters    
-    # df_recon_pi0vars = makeDVpi0vars(df_recon)
-    
-    # #make plots before cuts are applied
-    # #hist = df_recon_pi0vars.hist(bins=30)
-    # #plt.show()
-
-    # #Apply exclusivity cuts    
-    # df_after_cuts = cutDVpi(df_recon_pi0vars)
-
-    # #make plots after cuts are applied
-    # ic(df_after_cuts)
-    # #hist = df_after_cuts.hist(bins=30)
-    # #plt.show()
-
-
-
-    # df_small_gen = df_after_cuts.query("xB>0.3 & xB<0.38 & Q2>3 & Q2<3.5 & t> 0.5 & t<1")
-    
-    # x_data = df_small_gen["phi1"]
-    # var_names = ["phi"]
-
-
-    # y_data = df_small_gen["Ptheta"]
-    # x_data = df_small_gen["Pphi"]
-    # var_names = ["phi","theta"]
-    # ranges = [0,180,180,0,50,50]
-    # output_dir = "."
-    # lund_q2_xb_title = "Proton angles for {}".format("here/")
-
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=False,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    # y_data = df_small_gen["Etheta"]
-    # x_data = df_small_gen["Ephi"]
-    # ranges = [0,180,180,10,18,50]
-    # lund_q2_xb_title = "Electron angles for {}".format("here/")
-
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=False,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-    # y_data = df_small_gen["Gtheta"]
-    # x_data = df_small_gen["Gphi"]
-    # ranges = [0,180,180,5,25,50]
-    # lund_q2_xb_title = "Photon angles for {}".format("here/")
-
-    # make_histos.plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-    #                 saveplot=False,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-
-    # #make_histos.plot_1dhist(x_data2,var_names,[0,360,20],second_x=x_data,
-    # #                saveplot=False,pics_dir=output_dir,plot_title=lund_q2_xb_title.replace("/",""))
-
-
-    # sys.exit()
-

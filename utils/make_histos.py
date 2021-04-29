@@ -9,26 +9,27 @@ from icecream import ic
 
 
 def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-            saveplot=False,pics_dir="none",plot_title="none"):
+            saveplot=False,pics_dir="none",plot_title="none",
+            filename="ExamplePlot",units=["",""]):
     
     plt.rcParams["font.family"] = "Times New Roman"
     plt.rcParams["font.size"] = "20"
     # Initalize parameters
     x_name = var_names[0]
     y_name = var_names[1]
-    xmin = ranges[0]
-    xmax =  ranges[1]
-    num_xbins = ranges[2]
-    ymin =  ranges[3]
-    ymax =  ranges[4]
-    num_ybins = ranges[5]
+    xmin = ranges[0][0]
+    xmax =  ranges[0][1]
+    num_xbins = ranges[0][2]
+    ymin = ranges[1][0]
+    ymax =  ranges[1][1]
+    num_ybins = ranges[1][2]
     x_bins = np.linspace(xmin, xmax, num_xbins) 
     y_bins = np.linspace(ymin, ymax, num_ybins) 
 
     # Creating plot
     fig, ax = plt.subplots(figsize =(10, 7)) 
-    ax.set_xlabel(x_name)  
-    ax.set_ylabel(y_name)
+    ax.set_xlabel("{} ({})".format(x_name,units[0]))
+    ax.set_ylabel("{} ({})".format(y_name,units[1]))
 
     plt.hist2d(x_data, y_data, bins =[x_bins, y_bins],
         range=[[xmin,xmax],[ymin,ymax]],norm=mpl.colors.LogNorm())# cmap = plt.cm.nipy_spectral) 
@@ -56,17 +57,24 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
     else:
         plt.show()
 
-def plot_1dhist(x_data,vars,ranges,second_x="none",
-            saveplot=False,pics_dir="none",plot_title="none",first_color="red",sci_on=False):
+def plot_1dhist(x_data,vars,ranges="none",second_x="none",
+            saveplot=False,pics_dir="none",plot_title="none",first_color="blue",sci_on=False):
     
     plt.rcParams["font.family"] = "Times New Roman"
     plt.rcParams["font.size"] = "20"
 
     # Initalize parameters
     x_name = vars[0]
-    xmin = ranges[0]
-    xmax =  ranges[1]
-    num_xbins = ranges[2]
+
+    if ranges=="none":
+        xmin = 0.99*min(x_data)
+        xmax =  1.01*max(x_data)
+        num_xbins = 10#int(len(x_data)/)
+    else:
+        xmin = ranges[0]
+        xmax =  ranges[1]
+        num_xbins = ranges[2]
+
     x_bins = np.linspace(xmin, xmax, num_xbins) 
 
     # Creating plot
@@ -97,6 +105,7 @@ def plot_1dhist(x_data,vars,ranges,second_x="none",
 
     if saveplot:
         new_plot_title = plot_title.replace("/","").replace(" ","_").replace("$","").replace("^","").replace("\\","").replace(".","").replace("<","").replace(">","")
+        print(new_plot_title)
         plt.savefig(pics_dir + new_plot_title+".png")
         plt.close()
     else:
