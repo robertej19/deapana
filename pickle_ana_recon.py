@@ -26,7 +26,7 @@ from utils.utils import getEnergy
 from utils.utils import readFile
 from utils import make_histos
 from utils import histo_plotting
-
+from utils import filestruct
 
 M = 0.938272081 # target mass
 me = 0.5109989461 * 0.001 # electron mass
@@ -34,6 +34,9 @@ ebeam = 10.604 # beam energy
 pbeam = np.sqrt(ebeam * ebeam - me * me) # beam electron momentum
 beam = [0, 0, pbeam] # beam vector
 target = [0, 0, 0] # target vector
+
+fs = filestruct.fs()
+print(fs)
    
 def makeGenDVpi0vars(df_epgg):
 
@@ -249,47 +252,15 @@ if __name__ == "__main__":
         df = df_recon
 
 
+    # Uncomment below to get plotting of various features
+    #histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=False)
 
-
-
-    histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=False)
-
-
-    sys.exit()
-
-
-    # #xxxxxxxxxxxxxxxxxxxxxxxxxxx
-    # #Push through the generated data
-    # #xxxxxxxxxxxxxxxxxxxxxxxxxxx
-    #df_gen = pd.read_pickle("test/df_gen.pkl")
-    #df_recon = pd.read_pickle("df_recon_all_9628_files.pkl")
-    
-    #make plots before cuts are applied
-    #hist = df_gen_pi0vars.hist(bins=30)
-    #plt.show()
-
-    #df_gen_pi0vars = pd.read_pickle("gen_test_withpi0.pkl")
-    #df_gen_pi0vars0 = pd.read_pickle("gen/gen_5_withpi0.pkl")
-
-
-    #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    # df_gen_pi0vars = pd.read_pickle("recon/df_recon_with_pi0cuts.pkl")
-
-    df_small_gen = df_after_cuts
-    def get_counts(tmin,tmax):
-        tmin = tmin
-        tmax = tmax
-        xbmin = 0.3
-        xbmax = 0.38
-        q2min = 3
-        q2max = 3.5
+    def get_counts(df_base,tmin=0,tmax=1,xbmin=0,xbmax=1,q2min=0,q2max=12):
         cut_q = "xB>{} & xB<{} & Q2>{} & Q2<{} & t>{} & t<{}".format(xbmin,xbmax,q2min,q2max,tmin,tmax)
-        df_small_gen = df_gen_pi0vars.query(cut_q)
-        ic(df_small_gen)
+        df = df_base.query(cut_q)
+        ic(df)
 
-        
-
-        x_data = df_small_gen["phi1"]
+        x_data = df["phi1"]
         var_names = ["$\phi$"]
         ranges = [0,360,20]
         output_dir = "pics/"
@@ -297,40 +268,22 @@ if __name__ == "__main__":
         make_histos.plot_1dhist(x_data,var_names,ranges,
                         saveplot=True,pics_dir=output_dir,plot_title=title.replace("/",""),first_color="darkslateblue")
 
-        count, division = np.histogram(x_data, bins = [0,18,36,54,72,90,108,126,144,162,180,198,216,234,252,270,288,306,324,342,360])
-        print(count)
-        print(division)
-        print(len(division))
-        print(len(count))
-        print(np.sum(count))
+        count, division = np.histogram(x_data, bins = fs.phibins)
         tmin_arr = tmin*np.ones(len(count))
         return count, tmin_arr, division
 
-    count, tmin_arr, division = get_counts(0.2,0.3)
 
-    binned = pd.DataFrame(data=tmin_arr,index=division[:-1],columns=['tmin'])
-    binned['recon_counts'] = count
-    ic(binned)
 
-    count, tmin_arr, division = get_counts(0.3,0.5)
-    binned2 = pd.DataFrame(data=tmin_arr,index=division[:-1],columns=['tmin'])
-    binned2['recon_counts'] = count
-    ic(binned2)
+    binned_dfs = []
+    
+    for t_set in fs.t_ranges:
+        tmin = t_set[0]
+        tmax = t_set[1]
+        count, tmin_arr, division = get_counts(df_base=df,tmin=tmin,tmax=tmax,xbmin=0.2,xbmax=0.4,q2min=1,q2max=10)
+        binned = pd.DataFrame(data=tmin_arr,index=division[:-1],columns=['tmin'])
+        binned['recon_counts'] = count
+        binned_dfs.append(binned)
 
-    count, tmin_arr,division = get_counts(0.5,1.0)
-    binned3 = pd.DataFrame(data=tmin_arr,index=division[:-1],columns=['tmin'])
-    binned3['recon_counts'] = count
-    ic(binned3)
-
-    real_out = pd.concat([binned,binned2,binned3])
+    real_out = pd.concat(binned_dfs)
     ic(real_out)
-
     real_out.to_pickle("recon_phi_binned.pkl")
-
-    sys.exit()
-
-    df_small_gen = df_gen_pi0vars0#.query("Gent> 0.6 & Gent<1 & Genphi1>270")
-    df_small_gen = df_gen_pi0vars
-
-    ic(df_gen_pi0vars0.columns.values)
-    ic(df_gen_pi0vars0)
