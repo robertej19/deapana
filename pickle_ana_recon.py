@@ -222,23 +222,38 @@ if __name__ == "__main__":
     parser.add_argument("-o","--out", help="a single pickle file name as an output", default="outfile.pkl")
     parser.add_argument("-s","--entry_stop", help="entry_stop to stop reading the root file", default = None)
     parser.add_argument("-c","--cut", help="use this flag to cut out non-DVPiP events", default=False, action='store_true')
+    parser.add_argument("-g","--gen", help="enable to use gen events instead of recon", default=False, action='store_true')
     
     args = parser.parse_args()
 
-    if args.cut:
-        df_recon = pd.read_pickle("data/before_cuts/df_recon.pkl")
-        #Calculate pi0 parameters    
-        df_recon_pi0vars = makeDVpi0vars(df_recon)
-        #Apply exclusivity cuts    
-        df_recon = cutDVpi(df_recon_pi0vars)
-        df_recon.to_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+    if args.gen:
+        if args.cut:
+            df_gen = pd.read_pickle("data/before_cuts/df_gen.pkl")
+            df_gen_pi0vars = makeGenDVpi0vars(df_gen)
+            df_gen_pi0vars.to_pickle("data/after_cuts/df_gen_with_cuts.pkl")
+            df = df_gen_pi0vars
+        else:
+            df = pd.read_pickle("data/after_cuts/df_gen_with_cuts.pkl")
+        datatype = "Gen"
     else:
-        df_recon = pd.read_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+        if args.cut:
+            df_recon = pd.read_pickle("data/before_cuts/df_recon.pkl")
+            #Calculate pi0 parameters    
+            df_recon_pi0vars = makeDVpi0vars(df_recon)
+            #Apply exclusivity cuts    
+            df_recon = cutDVpi(df_recon_pi0vars)
+            df_recon.to_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+        else:
+            df_recon = pd.read_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+        datatype="Recon"
+        df = df_recon
 
 
 
 
-    histo_plotting.make_all_histos(df_recon)
+
+    histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=False)
+
 
     sys.exit()
 
