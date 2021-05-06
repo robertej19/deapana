@@ -34,7 +34,6 @@ mp = 0.938 #Mass proton
 prefix = alpha/(8*np.pi)
 E = 10.6
 
-epsilon = 0.5
 
 fs = filestruct.fs()
 
@@ -266,7 +265,7 @@ if __name__ == "__main__":
     ## If running after the first time:
     # python pickle_analysis.py
     # python pickle_analysis.py -g
-    # python pickle_analysis.py -r -c
+    # python pickle_analysis.py -r
 
     size_gen_chunks = 4000000 #Change this, depending on how big the gen dataset is
 
@@ -279,18 +278,18 @@ if __name__ == "__main__":
     parser.add_argument("-c","--cut", help="use this flag to cut out non-DVPiP events", default=False, action='store_true')
     parser.add_argument("-g","--gen", help="enable to use gen events instead of recon", default=False, action='store_true')
     parser.add_argument("-r","--real", help="enable to use real events instead of recon", default=False, action='store_true')
+    parser.add_argument("-p","--plot", help="enable to use real events instead of recon", default=False, action='store_true')
     
     args = parser.parse_args()
 
     dfs = []
     gen_path = "data/after_cuts/gen/"
 
+    datatype = "Recon"
     if args.gen:
         datatype = "Gen"
-    elif args.real:
+    if args.real:
         datatype = "Real"
-    else:
-        dataype = "Recon"
 
 
     if args.gen:
@@ -335,12 +334,16 @@ if __name__ == "__main__":
             df_recon.to_pickle("data/after_cuts/df_recon_7999_with_cuts.pkl")
         else:
             #df_recon = pd.read_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+            print('getting df recon')
             df_recon = pd.read_pickle("data/after_cuts/df_recon_7999_with_cuts.pkl")
         dfs.append(df_recon)
 
+    ic(dfs)
 
-    # Uncomment below to get plotting of various features
-    #histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=True)
+    if args.plot:
+        df = dfs[0]
+        histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=True)
+        sys.exit()
 
     for df_index, df in enumerate(dfs):
         print("Processing df {}".format(df_index))
@@ -360,6 +363,11 @@ if __name__ == "__main__":
                 binned['real_counts'] = count
                 binned['gamma'] = mean_g
                 binned['epsi'] = mean_epsi
+                binned['xb_min'] = xbmin
+                binned['xb_max'] = xbmax
+                binned['q2_min'] = q2min
+                binned['q2_max'] = q2max
+                binned['t_max'] = tmax
             elif datatype =="Gen":
                 binned['gen_counts_{}'.format(df_index)] = count
             else:

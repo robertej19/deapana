@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-A simple script to save Z and X of 6862 nflow project.
-"""
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -36,7 +32,6 @@ from utils import make_histos
 
 
 
-
 def fit_function(phi,A,B,C):
     #A + B*np.cos(2*phi) +C*np.cos(phi)
     rads = phi*np.pi/180
@@ -45,7 +40,7 @@ def fit_function(phi,A,B,C):
     #A = black, B=blue, C=red
     return A + B*np.cos(2*rads) + C*np.cos(rads)
 
-def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_on=True,log_on=False):
+def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_on=True,kopt=False):
     plt.rcParams["font.family"] = "Times New Roman"
     plt.rcParams["font.size"] = "20"
     
@@ -57,7 +52,7 @@ def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_
     bins_x = np.linspace(xmin, xmax, 21)
     #data_entries, bins = np.histogram(data,bins=bins_x)
     ic(phi_vals)
-    data_entries = phi_vals.to_numpy()
+    data_entries = phi_vals
     ic(data_entries)
     bins = bins_x
     data_errors = np.sqrt(data_entries)
@@ -73,19 +68,22 @@ def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_
         ic(bins)
         
         #binscenters = np.array([0.5 * (bins[i] + bins[i+1]) for i in range(len(bins)-1)])
-        binscenters = bins+9
+        binscenters = bins
         ic(binscenters)
         ic(data_entries)
         ic("TRYING TO RUN")
-        ind_to_drop = np.where(keep_bins<1)
+
+        acc_cut = 0.005
+
+        ind_to_drop = np.where(keep_bins>(1/acc_cut))
         ic("TRYING TO RUN2")
         ic(ind_to_drop)
-        #binscenters = np.delete(binscenters, ind_to_drop)
-        # data_entries = np.delete(data_entries, ind_to_drop)
-        # data_errors = np.delete(data_errors, ind_to_drop)
-        # ic(binscenters)
-        # ic(data_entries)
-        # ic(keep_bins)
+        binscenters = np.delete(binscenters, ind_to_drop)
+        data_entries = np.delete(data_entries, ind_to_drop)
+        data_errors = np.delete(data_errors, ind_to_drop)
+        ic(binscenters)
+        ic(data_entries)
+        ic(keep_bins)
 
         
         # 5.) Fit the function to the histogram data.
@@ -104,13 +102,7 @@ def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_
         # 6.)
         # Generate enough x values to make the curves look smooth.
        
-        kopt = (A,B,C)
-
-        fit_CLAS6_data_1 = fit_function(binscenters, *kopt)
-
-        ic(binscenters)
-
-        ic(fit_CLAS6_data_1)
+        fit_y_data_1 = fit_function(binscenters, *popt)
 
     
         
@@ -146,13 +138,13 @@ def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_
 
 
         xspace = np.linspace(binscenters.min()-9,binscenters.max()+9, 1000)
+        fit_y_data = fit_function(xspace, *popt)
 
-        #fit_y_data = fit_function(xspace, *popt)
-        fit_y_data = fit_function(xspace, *kopt)
-        
+        if kopt:
+            fit_y_data2 = fit_function(xspace, *kopt)
+
 
         ###ic.enable()
-        ic(fit_y_data)
         
         # y_manual = []
         # for ind, val in enumerate(xspace):
@@ -167,21 +159,15 @@ def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_
         # Plot the histogram and the fitted function.
 
         fig, ax = plt.subplots(figsize =(12, 7)) 
-
-
-        corrfact = fit_CLAS6_data_1/data_entries
-        ic(corrfact)
-
-        corrfact = [i if i<5000 else 0 for i in corrfact]
-        ic(corrfact)
-        bar1 = ax.bar(binscenters, corrfact, width=bins[1] - bins[0], color='navy', label='Histogram entries')
-        
-
         
         
-        #bar2 = ax.bar(binscenters, fit_CLAS6_data_1, width=bins[1] - bins[0], color='red', label='CLAS6 entries')
-        #bar1 = ax.bar(binscenters, data_entries, width=bins[1] - bins[0], color='navy', label='Histogram entries')
-        #fit1, = ax.plot(xspace, fit_y_data, color='darkorange', linewidth=2.5, label='Fitted function')
+        ic(data_entries)
+        ic(binscenters)
+        bar1 = ax.bar(binscenters, data_entries, width=18, color='navy', label='CLAS12')
+        fit1, = ax.plot(xspace, fit_y_data, color='darkorange', linewidth=2.5, label='CLAS12 Fit')
+        
+        if kopt:
+            fit2, = ax.plot(xspace, fit_y_data2, color='black', linewidth=2.5, label='CLAS6 Fit')
 
         # Make the plot nicer.
         plt.xlim(xmin,xmax)
@@ -190,7 +176,7 @@ def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_
         plt.ylabel('Corrected $N_{events}$/Lumi/Bin Vol')
 
         plot_title = plot_dir + phi_title+".png"
-        plt.title(phi_title)
+        plt.title(phi_title+", acc cutoff = {}".format(acc_cut))
         #plt.legend(loc='best')
 
         chisq = 1
@@ -198,11 +184,11 @@ def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_
         fit_params = "A: {:2.6f} \n B:{:2.6f} \n C:{:2.6f}".format(a,b,c)
 
         extra = Rectangle((0, 0), 1, 1, fc="w", fill=False, edgecolor='none', linewidth=0)
-        #ax.legend([bar1, fit1, extra], ("Data","A+Bcos(2Phi)+Ccos(Phi)",fit_params))
+        #ax.legend([bar1, fit1, fit2, extra], ("Data","CLAS 12 A+Bcos(2Phi)+Ccos(Phi)",'CLAS6 fit',fit_params))
+        ax.legend([bar1, fit1, fit2], ("Data","CLAS 12 fit",'CLAS6 fit data'))
         if sci_on:
             plt.ticklabel_format(axis="y",style="sci",scilimits=(0,0))
-        if log_on:
-            ax.set_yscale("log", nonposy='clip')
+
         #plt.text(120, max(data_entries)/1.3, fit_params)
 
         
@@ -210,14 +196,12 @@ def getPhiFit(keep_bins,realbins,phi_vals,phi_title,plot_dir,saveplot=False,sci_
             new_plot_title = plot_title.replace("/","").replace(" ","_").replace("$","").replace("^","").replace("\\","").replace(".","").replace("<","").replace(">","").replace(",","_")
             plt.savefig(plot_dir + new_plot_title+".png")
             plt.close()
-            print("Saved to {}".format(plot_dir))
         else:
             plt.show()
             plt.close()
         #print("plot saved to {}".format(plot_title))
 
         return popt, pcov, chisq, p
-
 
 def plotPhi_duo(phi_bins,bin_counts_0,bin_counts_1,phi_title,pics_dir,saveplot=False,legend=False,duo=False,fitting=False,sci_on=False):
     
@@ -239,8 +223,9 @@ def plotPhi_duo(phi_bins,bin_counts_0,bin_counts_1,phi_title,pics_dir,saveplot=F
 
     if 1==1:
         ic(bins)
-        binscenters = np.array([0.5 * (bins[i] + bins[i+1]) for i in range(len(bins)-1)])
-        binscenters = np.append(binscenters,np.array([351,]),axis=0)
+        #binscenters = np.array([0.5 * (bins[i] + bins[i+1]) for i in range(len(bins)-1)])
+        binscenters = bins
+        #binscenters = np.append(binscenters,np.array([351,]),axis=0)
         ic(binscenters)
         # 5.) Fit the function to the histogram data.
         #popt, pcov = curve_fit(fit_function, xdata=binscenters, ydata=data_entries, p0=[2.0, 2, 0.3],
@@ -330,8 +315,11 @@ def plotPhi_duo(phi_bins,bin_counts_0,bin_counts_1,phi_title,pics_dir,saveplot=F
         #ic(binscenters)
         #ic(data_entries_0)
         #ic(data_entries_1)
-        bar0 = ax.bar(binscenters, data_entries_1, width=bins[1] - bins[0], color='red', label='Raw')
-        
+        ic(binscenters)
+        ic(bins)
+        ic(data_entries_1)
+        bar0 = ax.bar(binscenters, data_entries_1,width=18)
+        #bar0 = ax.bar(binscenters, data_entries_1, width=bins[1] - bins[0], color='red', label='Raw')
         if duo:
             bar1 = ax.bar(binscenters, data_entries_0, width=bins[1] - bins[0], color='black', label='Corrected')
        # fit1, = ax.plot(xspace, fit_y_data, color='darkorange', linewidth=2.5, label='Fitted function')
@@ -365,49 +353,3 @@ def plotPhi_duo(phi_bins,bin_counts_0,bin_counts_1,phi_title,pics_dir,saveplot=F
             plt.show()
             plt.close()
         #print("plot saved to {}".format(plot_title))
-
-
-
-
-
-acc_cutoff = 0.005
-tmin = 0.2
-tmax = 0.3
-lumi = 5.512e7
-binvol = 0.5*0.8*18/180*np.pi*(tmax-tmin)
-
-# final.loc[:, "acc"] = final.loc[:, "recon_counts"]/final.loc[:, "gen_counts"]
-# final.loc[:, "acc_inv"] = 1/final.loc[:, "acc"]
-# final.loc[:, "keep_bin"] = (np.sign(final.loc[:, "acc"]-acc_cutoff)+1)/2
-# final.loc[:, "real_corr"] = final.loc[:, "real_counts"]/final.loc[:, "acc"]*final.loc[:, "keep_bin"]
-# final.loc[:, "real_corr_LBV"] = final.loc[:, "real_corr"]/(lumi*binvol)
-# final.loc[:, "real_corr"] =final.loc[:, "real_corr"].fillna(0)
-# ic(final)
-# final_0 = final.query("tmin=={}".format(tmin))
-
-# final_0 = final_0.query("keep_bin==1")
-
-final = pd.read_pickle("Real_phi_binned.pkl")
-
-final.loc[:, "xsec"] = final.loc[:, "real_counts"]/(lumi*binvol)
-final.loc[:, "keep_bin"] = (np.sign( final.loc[:, "real_counts"]))
-final_0 = final.query("tmin=={}".format(tmin))
-
-ic(final_0)
-
-getPhiFit(final_0["keep_bin"],final_0.index,final_0["xsec"],"F18In: Phi Fit, {}<t<{}".format(tmin,tmax),"pics/",saveplot=False,sci_on=False,log_on=True)
-
-sys.exit()
-
-
-#plotPhi_duo(final_0.index,final_0["real_counts"],final_0["real_counts"],"raw counts, {}<t<{}".format(tmin,tmax),"pics/",legend=True)
-
-#plotPhi_duo(final_0.index,final_0["real_corr_LBV"],final_0["real_corr_LBV"],"F18In: Corrected, Lumi, BinVol, {}<t<{}".format(tmin,tmax),"pics/",saveplot=True,sci_on=True)
-#plotPhi_duo(final_0.index,final_0["real_counts"],final_0["real_corr"],"F18In: Raw vs. Corrected, {}<t<{}".format(tmin,tmax),"pics/",legend=True,duo=True,saveplot=False)
-#plotPhi_duo(final_0.index,final_0["recon_counts"],final_0["gen_counts"],"Gen vs Rec, {}<t<{}".format(tmin,tmax),"pics/",legend=True,duo=True,sci_on=True,saveplot=True)
-#plotPhi_duo(final_0.index,final_0["acc"],final_0["acc"],"Acc. Corr. , Low Acc Bins Removed {}<t<{}".format(tmin,tmax),"pics/",saveplot=True)
-#plotPhi_duo(final_0.index,final_0["acc_inv"],final_0["acc_inv"],"Acceptance Correction","pics/",)
-
-#plotPhi_duo(final_0.index,final_0["real_corr"],final_0["real_corr"],"real vs real corr","pics/",legend=True,fitting=True)
-#getPhiFit(final_0["keep_bin"],final_0["real_corr"],"plot","pics/")
-
