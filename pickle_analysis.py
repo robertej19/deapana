@@ -256,6 +256,21 @@ def get_counts(df_base,tmin=0,tmax=1,xbmin=0,xbmax=1,q2min=0,q2max=12,datatype="
 
 if __name__ == "__main__":
 
+    #To process suite:
+    ## If processing data for the first time:
+    # python pickle_analysis.py -c
+    # python pickle_analysis.py -g -c
+    # python pickle_analysis.py -g
+    # python pickle_analysis.py -r -c
+
+    ## If running after the first time:
+    # python pickle_analysis.py
+    # python pickle_analysis.py -g
+    # python pickle_analysis.py -r -c
+
+    size_gen_chunks = 4000000 #Change this, depending on how big the gen dataset is
+
+
     parser = argparse.ArgumentParser(description="Get args",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("-f","--fname", help="a single root file to convert into pickles", default="infile.root")
@@ -267,37 +282,38 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
+    dfs = []
+    gen_path = "data/after_cuts/gen/"
+
+    if args.gen:
+        datatype = "Gen"
+    elif args.real:
+        datatype = "Real"
+    else:
+        dataype = "Recon"
+
+
     if args.gen:
         if args.cut:
             #df_gen = pd.read_pickle("data/before_cuts/df_gen.pkl")
             df = pd.read_pickle("data/before_cuts/df_7999_genONLY.pkl")
-            n = 4000000  #chunk row size
+            n = size_gen_chunks  #chunk row size
             ic(df.shape)
             list_df = []
             for i in range(0,df.shape[0],n):
                 ic(i)
                 ic(i+n)
                 list_df.append(df[i:i+n])
-            df_gen = list_df[0]
-            ic(df_gen)
 
-            dfs_with_pi0_vars = []
             for index, df_chunk in enumerate(list_df):
                 print("On DF chunk {}".format(index))
-                df_gen = makeGenDVpi0vars(df_gen)
-                #dfs_with_pi0_vars.append(makeGenDVpi0vars(df_gen))
-            #df_gen_pi0vars.to_pickle("data/after_cuts/df_gen_with_cuts.pkl")
-            #df_gen_pi0vars = pd.concat(dfs_with_pi0_vars)
+                df_gen = makeGenDVpi0vars(df_chunk)
                 df_gen.to_pickle("data/after_cuts/gen/df_7999_genONLY_with_cuts_{}.pkl".format(index))
-            sys.exit()#df = df_gen_pi0vars
+                dfs.append(df_gen)
         else:
-            #df = pd.read_pickle("data/after_cuts/df_gen_with_cuts.pkl")
-            gen_path = "data/after_cuts/gen/"
             gen_files = os.listdir(gen_path)
-            dfs = []
             for gf in gen_files:
                 dfs.append(pd.read_pickle(gen_path+gf))
-        datatype = "Gen"
     elif args.real:
         if args.cut:
             df_after_cuts = pd.read_pickle("data/after_cuts/F18_All_DVPi0_Events.pkl")
@@ -305,24 +321,22 @@ if __name__ == "__main__":
             df_after_cuts.loc[:, "q24E2"] = df_after_cuts.loc[:, "Q2"]/(4*E*E)
             df_after_cuts.loc[:, "epsi"] = (1-df_after_cuts.loc[:, "y"]-df_after_cuts.loc[:, "q24E2"])/(1-df_after_cuts.loc[:, "y"]+(df_after_cuts.loc[:, "q24E2"]*df_after_cuts.loc[:, "q24E2"])/2+df_after_cuts.loc[:, "q24E2"])
             df_after_cuts.loc[:, "gamma"] = prefix*df_after_cuts.loc[:, "Q2"]/(mp*mp*E*E)*(1-df_after_cuts.loc[:,"xB"])/(df_after_cuts.loc[:,"xB"]**3)*(1/(1- df_after_cuts.loc[:, "epsi"]))/(2*np.pi)
-            dfs =  [df_after_cuts]           
+            df_after_cuts.to_pickle("data/after_cuts/F18_All_DVPi0_Events_with_extra_vars.pkl")
         else:
-            pass
-        datatype = "Real"
+            df_after_cuts = pd.read_pickle("data/after_cuts/F18_All_DVPi0_Events_with_extra_vars.pkl")
+        dfs.append(df_after_cuts)         
     else:
         if args.cut:
-            #df_recon = pd.read_pickle("data/before_cuts/df_recon.pkl")
-            df_recon = pd.read_pickle("data/before_cuts/df_recon_7999.pkl")
+            df_recon_0 = pd.read_pickle("data/before_cuts/df_recon_7999.pkl")
             #Calculate pi0 parameters    
-            df_recon_pi0vars = makeDVpi0vars(df_recon)
+            df_recon_pi0vars = makeDVpi0vars(df_recon_0)
             #Apply exclusivity cuts    
             df_recon = cutDVpi(df_recon_pi0vars)
             df_recon.to_pickle("data/after_cuts/df_recon_7999_with_cuts.pkl")
         else:
             #df_recon = pd.read_pickle("data/after_cuts/df_recon_with_cuts.pkl")
             df_recon = pd.read_pickle("data/after_cuts/df_recon_7999_with_cuts.pkl")
-        datatype="Recon"
-        dfs = [df_recon]
+        dfs.append(df_recon)
 
 
     # Uncomment below to get plotting of various features
@@ -340,8 +354,8 @@ if __name__ == "__main__":
             tmin = t_set[0]
             tmax = t_set[1]
             count, tmin_arr, division, mean_g, mean_epsi = get_counts(df_base=df,tmin=tmin,tmax=tmax,xbmin=xbmin,xbmax=xbmax,q2min=q2min,q2max=q2max,datatype=datatype)
-            binned = pd.DataFrame(data=tmin_arr,index=division[:-1],columns=['tmin'])
-            ic(binned)
+            #binned = pd.DataFrame(data=tmin_arr,index=division[:-1],columns=['tmin'])
+            binned = pd.DataFrame({'phi_min':division[:-1],'tmin':tmin_arr})
             if datatype =="Real":
                 binned['real_counts'] = count
                 binned['gamma'] = mean_g
@@ -350,9 +364,10 @@ if __name__ == "__main__":
                 binned['gen_counts_{}'.format(df_index)] = count
             else:
                 binned['recon_counts'] = count
+            ic(binned)
             binned_dfs.append(binned)
 
-        real_out = pd.concat(binned_dfs)
+        real_out = pd.concat(binned_dfs,axis='index',ignore_index=True,join="outer")
         ic(real_out)
         real_out.to_pickle("data/binned/{}_phi_binned_{}.pkl".format(datatype,df_index))
         

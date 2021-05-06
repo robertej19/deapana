@@ -35,21 +35,38 @@ if args.merge:
     files = os.listdir(args.dirname)
 
     print(files)
-    sys.exit()
     dfs = []
+    dfs_gen = []
 
     for f in files:
         df = pd.read_pickle(args.dirname+f)
-        ic(df)
-        dfs.append(df)
+        if "Gen" in f:
+            dfs_gen.append(df)
+        elif "merged" in f:
+            pass
+        else:
+            dfs.append(df)
         
-    result = pd.concat(dfs)
+    results = pd.concat(dfs,axis='columns')
+    results = results.loc[:,~results.columns.duplicated()]
 
-    ic(result)
+    results_gen = pd.concat(dfs_gen,axis=1)
+    results_gen = results_gen.loc[:,~results_gen.columns.duplicated()]
+
+    results_gen['total_gen_count'] = results_gen[[col for col in results_gen.columns if col.startswith('gen_counts')]].sum(axis=1)
+
+    rfinal = pd.merge(results,  results_gen)
+    cols = [c for c in rfinal.columns if c.lower()[:3] != 'gen']
+    rfinal = rfinal[cols]
+
+    rfinal["acc_cor"] = rfinal["total_gen_count"]/rfinal["recon_counts"]
+    ic(rfinal)
+    sys.exit()
+
 
     outname = args.dirname+"merged_"+str(len(files))+".pkl"
     ic(outname)
-    result.to_pickle(outname)
+    results.to_pickle(outname)
 
 
 
