@@ -33,7 +33,7 @@ def make_all_histos(df,datatype="Recon",hists_2d=False,hists_1d=False,hists_over
                 config_xy = [config[hm["type_x"]],config[hm["type_y"]]]
                 ranges =  [config_xy[0][0],config_xy[1][0]]
                 units = [config_xy[0][1],config_xy[1][1]]
-                output_dir = "plots/hists_2d/"
+                output_dir = "plots/hists_2d/{}/".format(datatype)
                 title = "{} vs. {}, {}".format(var_names[0],var_names[1],datatype)
                 filename = hm["filename"] # not currently used!
 

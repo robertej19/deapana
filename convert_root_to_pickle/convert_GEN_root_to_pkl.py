@@ -75,6 +75,9 @@ def readFile(fname):
     tree = ffile["T"]
     return tree
 
+# entry_start (None or int) – The first entry to include. If None, start at zero. If negative, count from the end, like a Python slice.
+# entry_stop (None or int) – The first entry to exclude (i.e. one greater than the last entry to include). If None, stop at num_entries. If negative, count from the end, like a Python slice.
+
 def readEPGG(tree, entry_stop = None):
     
     # data frames and their keys to read Z part

@@ -34,10 +34,15 @@ ebeam = 10.604 # beam energy
 pbeam = np.sqrt(ebeam * ebeam - me * me) # beam electron momentum
 beam = [0, 0, pbeam] # beam vector
 target = [0, 0, 0] # target vector
+alpha = 1/137 #Fund const
+mp = 0.938 #Mass proton
+prefix = alpha/(8*np.pi)
+E = 10.6
+
+epsilon = 0.5
 
 fs = filestruct.fs()
-print(fs)
-   
+
 def makeGenDVpi0vars(df_epgg):
 
     # useful objects
@@ -93,14 +98,20 @@ def makeGenDVpi0vars(df_epgg):
 
     print(3)
     # trento angles
-    df_epgg['Genphi1'] = angle(v3l, v3h)
-    df_epgg['Genphi1'] = np.where(dot(v3l, pro) > 0, 360.0 -
+    df_epgg.loc[:,'Genphi1'] = angle(v3l, v3h)
+    print(3.1)
+
+    df_epgg.loc[:,'Genphi1'] = np.where(dot(v3l, pro) > 0, 360.0 -
                                 df_epgg['Genphi1'], df_epgg['Genphi1'])
-    df_epgg['Genphi2'] = angle(v3l, v3g)
-    df_epgg['Genphi2'] = np.where(dot(VGS, cross(v3l, v3g)) <
+    print(3.2)
+    
+    df_epgg.loc[:,'Genphi2'] = angle(v3l, v3g)
+    print(3.3)
+
+    df_epgg.loc[:,'Genphi2'] = np.where(dot(VGS, cross(v3l, v3g)) <
                                 0, 360.0 - df_epgg['Genphi2'], df_epgg['Genphi2'])
 
-    print(4)
+    print(3.4)
 
     return df_epgg
 
@@ -180,9 +191,8 @@ def makeDVpi0vars(df_epgg):
 
     return df_math_epgg
 
-def cutDVpi(df_math_epgg):
+def cutDVpi(df_epgg):
     #make dvpi0 pairs
-    df_epgg = df_math_epgg
 
     df_epgg.loc[:, "closeness"] = np.abs(df_epgg.loc[:, "Mpi0"] - .1349766)
 
@@ -217,6 +227,38 @@ def cutDVpi(df_math_epgg):
     return df_dvpi0
 
 
+def get_counts(df_base,tmin=0,tmax=1,xbmin=0,xbmax=1,q2min=0,q2max=12,datatype="Recon"):
+    cut_q = "xB>{} & xB<{} & Q2>{} & Q2<{} & t>{} & t<{}".format(xbmin,xbmax,q2min,q2max,tmin,tmax)
+    if datatype == "Gen":
+        cut_q = "GenxB>{} & GenxB<{} & GenQ2>{} & GenQ2<{} & Gent>{} & Gent<{}".format(xbmin,xbmax,q2min,q2max,tmin,tmax)
+
+    df = df_base.query(cut_q)
+    ic(df)
+
+    x_var_name = "phi1"
+    if datatype == "Gen":
+        x_var_name ="Genphi1"
+    x_data = df[x_var_name]
+    
+    var_names = ["$\phi$"]
+    ranges = [0,360,20]
+    output_dir = "pics/"
+    title = "$\phi$, Sim, {}<t<{} GeV$^2$,{}<$x_B$<{}, {}<$Q^2$<{}".format(tmin,tmax,xbmin,xbmax,q2min,q2max)
+    make_histos.plot_1dhist(x_data,var_names,ranges,
+                    saveplot=True,pics_dir=output_dir,plot_title=title.replace("/",""),first_color="darkslateblue")
+
+    count, division = np.histogram(x_data, bins = fs.phibins)
+    tmin_arr = tmin*np.ones(len(count))
+
+    mean_g, mean_epsi = 0,0
+    if datatype =="Real":
+        mean_g = df['gamma'].mean()*np.ones(len(count))
+        mean_epsi = df['epsi'].mean()*np.ones(len(count))
+    
+    return count, tmin_arr, division, mean_g, mean_epsi
+
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Get args",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -226,64 +268,104 @@ if __name__ == "__main__":
     parser.add_argument("-s","--entry_stop", help="entry_stop to stop reading the root file", default = None)
     parser.add_argument("-c","--cut", help="use this flag to cut out non-DVPiP events", default=False, action='store_true')
     parser.add_argument("-g","--gen", help="enable to use gen events instead of recon", default=False, action='store_true')
+    parser.add_argument("-r","--real", help="enable to use real events instead of recon", default=False, action='store_true')
     
     args = parser.parse_args()
 
     if args.gen:
         if args.cut:
-            df_gen = pd.read_pickle("data/before_cuts/df_gen.pkl")
-            df_gen_pi0vars = makeGenDVpi0vars(df_gen)
-            df_gen_pi0vars.to_pickle("data/after_cuts/df_gen_with_cuts.pkl")
-            df = df_gen_pi0vars
+            #df_gen = pd.read_pickle("data/before_cuts/df_gen.pkl")
+            df = pd.read_pickle("data/before_cuts/df_7999_genONLY.pkl")
+            n = 4000000  #chunk row size
+            ic(df.shape)
+            list_df = []
+            for i in range(0,df.shape[0],n):
+                ic(i)
+                ic(i+n)
+                list_df.append(df[i:i+n])
+            df_gen = list_df[0]
+            ic(df_gen)
+
+            dfs_with_pi0_vars = []
+            for index, df_chunk in enumerate(list_df):
+                print("On DF chunk {}".format(index))
+                df_gen = makeGenDVpi0vars(df_gen)
+                #dfs_with_pi0_vars.append(makeGenDVpi0vars(df_gen))
+            #df_gen_pi0vars.to_pickle("data/after_cuts/df_gen_with_cuts.pkl")
+            #df_gen_pi0vars = pd.concat(dfs_with_pi0_vars)
+                df_gen.to_pickle("data/after_cuts/gen/df_7999_genONLY_with_cuts_{}.pkl".format(index))
+            sys.exit()#df = df_gen_pi0vars
         else:
-            df = pd.read_pickle("data/after_cuts/df_gen_with_cuts.pkl")
+            #df = pd.read_pickle("data/after_cuts/df_gen_with_cuts.pkl")
+            gen_files = os.listdir("data/after_cuts/gen/")
+            print(gen_files)
+            sys.exit()
+            #df = pd.read_pickle(df_7999_genONLY_with_cuts_2.pkl")
         datatype = "Gen"
+    elif args.real:
+        if args.cut:
+            df_after_cuts = pd.read_pickle("data/after_cuts/F18_All_DVPi0_Events.pkl")
+            df_after_cuts.loc[:, "y"] = (E-df_after_cuts.loc[:, "nu"])/E    
+            df_after_cuts.loc[:, "q24E2"] = df_after_cuts.loc[:, "Q2"]/(4*E*E)
+            df_after_cuts.loc[:, "epsi"] = (1-df_after_cuts.loc[:, "y"]-df_after_cuts.loc[:, "q24E2"])/(1-df_after_cuts.loc[:, "y"]+(df_after_cuts.loc[:, "q24E2"]*df_after_cuts.loc[:, "q24E2"])/2+df_after_cuts.loc[:, "q24E2"])
+            df_after_cuts.loc[:, "gamma"] = prefix*df_after_cuts.loc[:, "Q2"]/(mp*mp*E*E)*(1-df_after_cuts.loc[:,"xB"])/(df_after_cuts.loc[:,"xB"]**3)*(1/(1- df_after_cuts.loc[:, "epsi"]))/(2*np.pi)
+            df =  df_after_cuts           
+        else:
+            pass
+        datatype = "Real"
     else:
         if args.cut:
-            df_recon = pd.read_pickle("data/before_cuts/df_recon.pkl")
+            #df_recon = pd.read_pickle("data/before_cuts/df_recon.pkl")
+            df_recon = pd.read_pickle("data/before_cuts/df_recon_7999.pkl")
             #Calculate pi0 parameters    
             df_recon_pi0vars = makeDVpi0vars(df_recon)
             #Apply exclusivity cuts    
             df_recon = cutDVpi(df_recon_pi0vars)
-            df_recon.to_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+            df_recon.to_pickle("data/after_cuts/df_recon_7999_with_cuts.pkl")
         else:
-            df_recon = pd.read_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+            #df_recon = pd.read_pickle("data/after_cuts/df_recon_with_cuts.pkl")
+            df_recon = pd.read_pickle("data/after_cuts/df_recon_7999_with_cuts.pkl")
         datatype="Recon"
         df = df_recon
 
 
     # Uncomment below to get plotting of various features
-    #histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=False)
-
-    def get_counts(df_base,tmin=0,tmax=1,xbmin=0,xbmax=1,q2min=0,q2max=12):
-        cut_q = "xB>{} & xB<{} & Q2>{} & Q2<{} & t>{} & t<{}".format(xbmin,xbmax,q2min,q2max,tmin,tmax)
-        df = df_base.query(cut_q)
-        ic(df)
-
-        x_data = df["phi1"]
-        var_names = ["$\phi$"]
-        ranges = [0,360,20]
-        output_dir = "pics/"
-        title = "$\phi$, Sim, {}<t<{} GeV$^2$,{}<$x_B$<{}, {}<$Q^2$<{}".format(tmin,tmax,xbmin,xbmax,q2min,q2max)
-        make_histos.plot_1dhist(x_data,var_names,ranges,
-                        saveplot=True,pics_dir=output_dir,plot_title=title.replace("/",""),first_color="darkslateblue")
-
-        count, division = np.histogram(x_data, bins = fs.phibins)
-        tmin_arr = tmin*np.ones(len(count))
-        return count, tmin_arr, division
-
-
+    #histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=True)
 
     binned_dfs = []
-    
+    xbmin = 0.3
+    xbmax = 0.38
+    q2min = 2
+    q2max = 2.5
     for t_set in fs.t_ranges:
         tmin = t_set[0]
         tmax = t_set[1]
-        count, tmin_arr, division = get_counts(df_base=df,tmin=tmin,tmax=tmax,xbmin=0.2,xbmax=0.4,q2min=1,q2max=10)
+        count, tmin_arr, division, mean_g, mean_epsi = get_counts(df_base=df,tmin=tmin,tmax=tmax,xbmin=xbmin,xbmax=xbmax,q2min=q2min,q2max=q2max,datatype=datatype)
         binned = pd.DataFrame(data=tmin_arr,index=division[:-1],columns=['tmin'])
-        binned['recon_counts'] = count
+        if datatype =="Real":
+            binned['real_counts'] = count
+            binned['gamma'] = mean_g
+            binned['epsi'] = mean_epsi
+        else:
+            binned['recon_counts'] = count
         binned_dfs.append(binned)
 
     real_out = pd.concat(binned_dfs)
     ic(real_out)
-    real_out.to_pickle("recon_phi_binned.pkl")
+    real_out.to_pickle("data/binned/{}_phi_binned.pkl".format(datatype))
+
+
+    email = True
+    if email:
+        import os
+        from datetime import datetime
+        from pytools import circle_emailer
+
+        now = datetime.now()
+        script_end_time = now.strftime("%H:%M:%S")
+        s_name = os.path.basename(__file__)
+        subject = "Completion of {}".format(s_name)
+        body = "Your script {} finished running at {}".format(s_name,script_end_time)
+        circle_emailer.send_email(subject,body)
+
+

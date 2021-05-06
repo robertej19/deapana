@@ -52,8 +52,12 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
         #plot_title.replace("/","")
         new_plot_title = plot_title.replace("/","").replace(" ","_").replace("$","").replace("^","").replace("\\","").replace(".","").replace("<","").replace(">","")
         print(new_plot_title)
+        if not os.path.exists(pics_dir):
+            os.makedirs(pics_dir)
         plt.savefig(pics_dir + new_plot_title+".png")
         plt.close()
+        print("Figure {} saved to {}".format(new_plot_title,pics_dir))
+
     else:
         plt.show()
 
@@ -106,6 +110,9 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
     if saveplot:
         new_plot_title = plot_title.replace("/","").replace(" ","_").replace("$","").replace("^","").replace("\\","").replace(".","").replace("<","").replace(">","")
         print(new_plot_title)
+        
+
+
         plt.savefig(pics_dir + new_plot_title+".png")
         plt.close()
     else:
