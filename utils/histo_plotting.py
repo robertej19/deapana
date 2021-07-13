@@ -11,6 +11,7 @@ def make_all_histos(df,datatype="Recon",hists_2d=False,hists_1d=False,hists_over
     if datatype=="Gen":
         var_prefix = "Gen"
     vals = df.columns.values
+    ic(vals)
 
     output_dir = "pics/"
 

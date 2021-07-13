@@ -6,6 +6,7 @@ import numpy as np
 import argparse
 import matplotlib.pyplot as plt
 from copy import copy
+import sys 
 
 M = 0.938272081 # target mass
 me = 0.5109989461 * 0.001 # electron mass
@@ -89,6 +90,17 @@ def readEPGG(tree, entry_stop = None):
     for key in gamKeysGen:
         df_gammaGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
 
+    print(tree.keys())
+    print(tree['GenEpx'].array())
+    print(tree['Gpx'].array())
+
+    
+    
+    print(df_electronGen)
+    print(df_protonGen)
+    print(df_gammaGen)
+
+
     #convert data type to standard double
     df_electronGen = df_electronGen.astype({"GenEpx": float, "GenEpy": float, "GenEpz": float})
     df_protonGen = df_protonGen.astype({"GenPpx": float, "GenPpy": float, "GenPpz": float})
@@ -142,7 +154,7 @@ def readEPGG(tree, entry_stop = None):
     df_protonGen.loc[:, 'GenPphi'] = getPhi(proGen)
 
     gamGen = [df_gammaGen["GenGpx"], df_gammaGen["GenGpy"], df_gammaGen["GenGpz"]]
-    # df_gammaGen.loc[:, 'GenGp'] = mag(gamGen)
+    df_gammaGen.loc[:, 'GenGp'] = mag(gamGen)
     df_gammaGen.loc[:, 'GenGtheta'] = getTheta(gamGen)
     df_gammaGen.loc[:, 'GenGphi'] = getPhi(gamGen)
 
@@ -315,19 +327,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     tree = readFile(args.fname)
-    df_gen, df_rec = readEPGG(tree)
 
+    print(tree.keys())
+    df_gen, df_rec = readEPGG(tree)
+    #df_gen = readEPGG(tree)
     print(df_rec.shape)
     print(df_rec.head(20))
-    #a = df_rec.query(
-    #"W>2")
+    # a = df_rec.query(
+    # "W>2")
 
-    df_math = saveDVpi0vars(df_rec)
-    a = df_math.query(
-    "W>1")
+    # df_math = saveDVpi0vars(df_rec)
+    # a = df_math.query(
+    # "W>1")
 
-    hist = a.hist(bins=30)
-    #plt.show()
+    # hist = a.hist(bins=30)
+    # plt.show()
 
     df_rec.to_pickle("df_recon.pkl")
     df_gen.to_pickle("df_gen.pkl")

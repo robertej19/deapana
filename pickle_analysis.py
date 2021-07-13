@@ -293,9 +293,15 @@ if __name__ == "__main__":
 
 
     if args.gen:
+        #fname0 = "df_7999_genONLY"
+        #fname0 = "df_gentest3"
+        #fname0 = "test34gen"
+        fname0 = "df_in_18"
+        #fname0 = "df_gen_TEST2"
+        #fname0 = "df_in_18_recon_gen"
         if args.cut:
             #df_gen = pd.read_pickle("data/before_cuts/df_gen.pkl")
-            df = pd.read_pickle("data/before_cuts/df_7999_genONLY.pkl")
+            df = pd.read_pickle("data/before_cuts/{}.pkl".format(fname0))
             n = size_gen_chunks  #chunk row size
             ic(df.shape)
             list_df = []
@@ -307,7 +313,7 @@ if __name__ == "__main__":
             for index, df_chunk in enumerate(list_df):
                 print("On DF chunk {}".format(index))
                 df_gen = makeGenDVpi0vars(df_chunk)
-                df_gen.to_pickle("data/after_cuts/gen/df_7999_genONLY_with_cuts_{}.pkl".format(index))
+                df_gen.to_pickle("data/after_cuts/gen/{}_with_cuts_{}.pkl".format(fname0,index))
                 dfs.append(df_gen)
         else:
             gen_files = os.listdir(gen_path)
@@ -325,24 +331,40 @@ if __name__ == "__main__":
             df_after_cuts = pd.read_pickle("data/after_cuts/F18_All_DVPi0_Events_with_extra_vars.pkl")
         dfs.append(df_after_cuts)         
     else:
+        #fname0 = "data/before_cuts/df_recon_7999.pkl"
+        #fname1 = "data/after_cuts/df_recon_7999_with_cuts.pkl"
+        #fname0 = "df_radtest7_recon.pkl"
+        #fname1 = "df_radtest7_recon_with_cuts.pkl"
+        #fname0 = "data/before_cuts/df_in_18_recon_gen.pkl"
+        fname0 = "df_recon_TEST2.pkl"
+
         if args.cut:
-            df_recon_0 = pd.read_pickle("data/before_cuts/df_recon_7999.pkl")
+            df_recon_0 = pd.read_pickle("data/before_cuts/{}".format(fname0))
             #Calculate pi0 parameters    
             df_recon_pi0vars = makeDVpi0vars(df_recon_0)
             #Apply exclusivity cuts    
             df_recon = cutDVpi(df_recon_pi0vars)
-            df_recon.to_pickle("data/after_cuts/df_recon_7999_with_cuts.pkl")
+            df_recon.to_pickle("data/after_cuts/{}".format(fname0))
         else:
             #df_recon = pd.read_pickle("data/after_cuts/df_recon_with_cuts.pkl")
             print('getting df recon')
-            df_recon = pd.read_pickle("data/after_cuts/df_recon_7999_with_cuts.pkl")
+            df_recon = pd.read_pickle(fname1)
         dfs.append(df_recon)
 
     ic(dfs)
+    df = dfs[0]
 
+
+    print(df.columns.values)
     if args.plot:
         df = dfs[0]
-        histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=True)
+
+        df = df.query("GenW>2")
+        df = df.query("GenQ2>1")
+        ic(df)
+
+
+        histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=False)
         sys.exit()
 
     for df_index, df in enumerate(dfs):

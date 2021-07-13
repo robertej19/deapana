@@ -83,26 +83,32 @@ def readEPGG(tree, entry_stop = None):
     # data frames and their keys to read Z part
     df_electronGen = pd.DataFrame()
     df_protonGen = pd.DataFrame()
+    df_pionGen = pd.DataFrame()
     df_gammaGen = pd.DataFrame()
     eleKeysGen = ["GenEpx", "GenEpy", "GenEpz"]
     proKeysGen = ["GenPpx", "GenPpy", "GenPpz"]
+    piKeysGen = ["GenPipx", "GenPipy", "GenPipz"]
     gamKeysGen = ["GenGpx", "GenGpy", "GenGpz"]
     # read keys
     for key in eleKeysGen:
         df_electronGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
     for key in proKeysGen:
         df_protonGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
+    # for key in piKeysGen:
+        # df_pionGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
     for key in gamKeysGen:
         df_gammaGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
 
     #convert data type to standard double
     df_electronGen = df_electronGen.astype({"GenEpx": float, "GenEpy": float, "GenEpz": float})
     df_protonGen = df_protonGen.astype({"GenPpx": float, "GenPpy": float, "GenPpz": float})
+    # df_pionGen = df_pionGen.astype({"GenPipx": float, "GenPipy": float, "GenPipz": float})
     df_gammaGen = df_gammaGen.astype({"GenGpx": float, "GenGpy": float, "GenGpz": float})
 
     #set up a dummy index for merging
     df_electronGen.loc[:,'event'] = df_electronGen.index
     df_protonGen.loc[:,'event'] = df_protonGen.index
+    # df_pionGen.loc[:,'event'] = df_pionGen.index
     df_gammaGen.loc[:,'event'] = df_gammaGen.index.get_level_values('entry')
 
     #sort columns for readability
@@ -147,6 +153,11 @@ def readEPGG(tree, entry_stop = None):
     df_protonGen.loc[:, 'GenPtheta'] = getTheta(proGen)
     df_protonGen.loc[:, 'GenPphi'] = getPhi(proGen)
 
+    # piGen = [df_pionGen["GenPipx"], df_pionGen["GenPipy"], df_pionGen["GenPipz"]]
+    # df_pionGen.loc[:, 'GenPip'] = mag(piGen)
+    # df_pionGen.loc[:, 'GenPitheta'] = getTheta(piGen)
+    # df_pionGen.loc[:, 'GenPiphi'] = getPhi(piGen)
+
     gamGen = [df_gammaGen["GenGpx"], df_gammaGen["GenGpy"], df_gammaGen["GenGpz"]]
     # df_gammaGen.loc[:, 'GenGp'] = mag(gamGen)
     df_gammaGen.loc[:, 'GenGtheta'] = getTheta(gamGen)
@@ -158,6 +169,7 @@ def readEPGG(tree, entry_stop = None):
     df_gammaGen.loc[:, 'GenGphi2'] = getPhi(gamGen2)
 
     df_z = pd.merge(df_electronGen, df_protonGen, how='inner', on='event')
+    # df_z = pd.merge(df_z, df_pionGen, how='inner', on='event')
     df_z = pd.merge(df_z, df_gammaGen, how='inner', on='event')
 
 
