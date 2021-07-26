@@ -87,28 +87,23 @@ def readEPGG(tree, entry_stop = None):
     df_gammaGen = pd.DataFrame()
     eleKeysGen = ["GenEpx", "GenEpy", "GenEpz"]
     proKeysGen = ["GenPpx", "GenPpy", "GenPpz"]
-    piKeysGen = ["GenPipx", "GenPipy", "GenPipz"]
     gamKeysGen = ["GenGpx", "GenGpy", "GenGpz"]
     # read keys
     for key in eleKeysGen:
         df_electronGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
     for key in proKeysGen:
         df_protonGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
-    # for key in piKeysGen:
-        # df_pionGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
     for key in gamKeysGen:
         df_gammaGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
 
     #convert data type to standard double
     df_electronGen = df_electronGen.astype({"GenEpx": float, "GenEpy": float, "GenEpz": float})
     df_protonGen = df_protonGen.astype({"GenPpx": float, "GenPpy": float, "GenPpz": float})
-    # df_pionGen = df_pionGen.astype({"GenPipx": float, "GenPipy": float, "GenPipz": float})
     df_gammaGen = df_gammaGen.astype({"GenGpx": float, "GenGpy": float, "GenGpz": float})
 
     #set up a dummy index for merging
     df_electronGen.loc[:,'event'] = df_electronGen.index
     df_protonGen.loc[:,'event'] = df_protonGen.index
-    # df_pionGen.loc[:,'event'] = df_pionGen.index
     df_gammaGen.loc[:,'event'] = df_gammaGen.index.get_level_values('entry')
 
     #sort columns for readability
@@ -153,13 +148,9 @@ def readEPGG(tree, entry_stop = None):
     df_protonGen.loc[:, 'GenPtheta'] = getTheta(proGen)
     df_protonGen.loc[:, 'GenPphi'] = getPhi(proGen)
 
-    # piGen = [df_pionGen["GenPipx"], df_pionGen["GenPipy"], df_pionGen["GenPipz"]]
-    # df_pionGen.loc[:, 'GenPip'] = mag(piGen)
-    # df_pionGen.loc[:, 'GenPitheta'] = getTheta(piGen)
-    # df_pionGen.loc[:, 'GenPiphi'] = getPhi(piGen)
 
     gamGen = [df_gammaGen["GenGpx"], df_gammaGen["GenGpy"], df_gammaGen["GenGpz"]]
-    # df_gammaGen.loc[:, 'GenGp'] = mag(gamGen)
+    df_gammaGen.loc[:, 'GenGp'] = mag(gamGen)
     df_gammaGen.loc[:, 'GenGtheta'] = getTheta(gamGen)
     df_gammaGen.loc[:, 'GenGphi'] = getPhi(gamGen)
 
@@ -169,7 +160,6 @@ def readEPGG(tree, entry_stop = None):
     df_gammaGen.loc[:, 'GenGphi2'] = getPhi(gamGen2)
 
     df_z = pd.merge(df_electronGen, df_protonGen, how='inner', on='event')
-    # df_z = pd.merge(df_z, df_pionGen, how='inner', on='event')
     df_z = pd.merge(df_z, df_gammaGen, how='inner', on='event')
 
 
@@ -182,13 +172,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get args",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("-f","--fname", help="a single root file to convert into pickles", default="infile.root")
+    parser.add_argument("-t","--test", help="use to enable testing flag", action='store_true',default=False)
     parser.add_argument("-o","--out", help="a single pickle file name as an output", default="outfile.pkl")
     parser.add_argument("-s","--entry_stop", help="entry_stop to stop reading the root file", default = None)
     
     args = parser.parse_args()
 
+    if args.test:
+        test_file = "tests/sample_noradgen_0.root"
+        print("test enabled, using {}")
+        args.fname = test_file
+
+
     tree = readFile(args.fname)
     df_gen = readEPGG(tree)
+
+    print(df_gen.shape)
+    print(df_gen.head(20))
 
 
     df_gen.to_pickle("df_genONLY.pkl")
