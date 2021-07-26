@@ -179,10 +179,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.test:
-        test_file = "tests/sample_noradgen_0.root"
+        test_file = "tests/sample_noradgen_1.root"
         print("test enabled, using {}")
         args.fname = test_file
 
+    fname_base = args.fname.split(".")[0]
 
     tree = readFile(args.fname)
     df_gen = readEPGG(tree)
@@ -191,5 +192,5 @@ if __name__ == "__main__":
     print(df_gen.head(20))
 
 
-    df_gen.to_pickle("df_genONLY.pkl")
+    df_gen.to_pickle(fname_base+"_genONLY.pkl")
 

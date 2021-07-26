@@ -296,7 +296,9 @@ if __name__ == "__main__":
         #fname0 = "df_7999_genONLY"
         #fname0 = "df_gentest3"
         #fname0 = "test34gen"
-        fname0 = "df_in_18"
+        #fname0 = "df_in_18"
+        #fname0 = "df_test_10M_gen"
+        fname0 = "df_gen_pisamp"
         #fname0 = "df_gen_TEST2"
         #fname0 = "df_in_18_recon_gen"
         if args.cut:
@@ -336,7 +338,8 @@ if __name__ == "__main__":
         #fname0 = "df_radtest7_recon.pkl"
         #fname1 = "df_radtest7_recon_with_cuts.pkl"
         #fname0 = "data/before_cuts/df_in_18_recon_gen.pkl"
-        fname0 = "df_recon_TEST2.pkl"
+        #fname0 = "df_recon_TEST2.pkl"
+        fname0 = "df_test_outbending_recon.pkl"
 
         if args.cut:
             df_recon_0 = pd.read_pickle("data/before_cuts/{}".format(fname0))
@@ -359,12 +362,12 @@ if __name__ == "__main__":
     if args.plot:
         df = dfs[0]
 
-        df = df.query("GenW>2")
-        df = df.query("GenQ2>1")
+        # df = df.query("GenW>2")
+        # df = df.query("GenQ2>1")
         ic(df)
 
 
-        histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=True,hists_1d=False,hists_overlap=False,saveplots=False)
+        histo_plotting.make_all_histos(df,datatype=datatype,hists_2d=False,hists_1d=True,hists_overlap=False,saveplots=False)
         sys.exit()
 
     for df_index, df in enumerate(dfs):

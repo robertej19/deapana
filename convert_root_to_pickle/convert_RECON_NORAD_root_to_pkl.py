@@ -335,10 +335,11 @@ if __name__ == "__main__":
 
 
     if args.test:
-        test_file = "tests/sample_noradrec_0.root"
+        test_file = "tests/sample_noradrec_1.root"
         print("test enabled, using {}")
         args.fname = test_file
 
+    fname_base = args.fname.split(".")[0]
 
 
     tree = readFile(args.fname)
@@ -358,6 +359,5 @@ if __name__ == "__main__":
     # hist = a.hist(bins=30)
     # plt.show()
 
-    df_rec.to_pickle("df_recon.pkl")
-    df_gen.to_pickle("df_gen.pkl")
-
+    df_rec.to_pickle(fname_base+"_recon_recon.pkl")
+    df_gen.to_pickle(fname_base+"_recon_gen.pkl")

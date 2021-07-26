@@ -75,6 +75,8 @@ def readFile(fname):
 
 def readEPGG(tree, entry_stop = None):
     
+    print(tree.keys())
+
     # data frames and their keys to read Z part
     df_electronGen = pd.DataFrame()
     df_protonGen = pd.DataFrame()
@@ -96,7 +98,6 @@ def readEPGG(tree, entry_stop = None):
     for key in piKeysGen:
         df_piGen[key] = tree[key].array(library="pd", entry_stop=entry_stop)
 
-    print(tree.keys())
     print(tree['GenEpx'].array())
     print(tree['Gpx'].array())
 
@@ -339,8 +340,18 @@ if __name__ == "__main__":
     parser.add_argument("-f","--fname", help="a single root file to convert into pickles", default="infile.root")
     parser.add_argument("-o","--out", help="a single pickle file name as an output", default="outfile.pkl")
     parser.add_argument("-s","--entry_stop", help="entry_stop to stop reading the root file", default = None)
+    parser.add_argument("-t","--test", help="use to enable testing flag", action='store_true',default=False)
     
     args = parser.parse_args()
+
+
+    if args.test:
+        test_file = "tests/sample_radrec_1.root"
+        print("test enabled, using {}")
+        args.fname = test_file
+
+    fname_base = args.fname.split(".")[0]
+
 
     tree = readFile(args.fname)
 
@@ -359,6 +370,5 @@ if __name__ == "__main__":
     # hist = a.hist(bins=30)
     # plt.show()
 
-    df_rec.to_pickle("df_recon.pkl")
-    df_gen.to_pickle("df_gen.pkl")
-
+    df_rec.to_pickle(fname_base+"_recon_recon.pkl")
+    df_gen.to_pickle(fname_base+"_recon_gen.pkl")
