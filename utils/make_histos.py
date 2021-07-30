@@ -95,7 +95,7 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
     
     
     plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color=first_color, label='Raw Counts')# cmap = plt.cm.nipy_spectral) 
-    if second_x is not "none":
+    if second_x != "none":
         print("printing second histo")
         plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='black', label='With Acceptance Corr.')# cmap = plt.cm.nipy_spectral) 
 
@@ -119,6 +119,8 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
         
 
         print(pics_dir)
+        if not os.path.exists(pics_dir):
+            os.makedirs(pics_dir)
 
         plt.savefig(pics_dir + new_plot_title+".png")
         plt.close()

@@ -189,7 +189,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.test:
-        test_file = "tests/sample_radgen_1.root"
+        #test_file = "tests/sample_radgen_1.root"
+        test_file = "tests/merged_Fall_2018_Inbending_gen_10radtest.root"
         print("test enabled, using {}")
         args.fname = test_file
 

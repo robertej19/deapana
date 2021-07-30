@@ -346,7 +346,8 @@ if __name__ == "__main__":
 
 
     if args.test:
-        test_file = "tests/sample_radrec_1.root"
+        #test_file = "tests/sample_radrec_1.root"
+        test_file = "tests/merged_Fall_2018_Inbending_recon_10radtest.root"
         print("test enabled, using {}")
         args.fname = test_file
 
