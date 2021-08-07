@@ -55,17 +55,15 @@ fs = filestruct.fs()
 
 if __name__ == "__main__":
 
-    #data_paths = ["Rad/Gen/","Rad/Recon/","Norad/Gen/","Norad/Recon/",]
-    #converters = [convert_GEN_RAD_root_to_pkl,convert_RECON_RAD_root_to_pkl,
-    #                convert_GEN_NORAD_root_to_pkl,convert_RECON_NORAD_root_to_pkl]
-    #data_types = ["Gen","Recon","Gen","Recon"]
-    data_paths = ["Norad/Recon/","Norad/Gen/"]
+    data_paths = ["Rad/Gen/","Rad/Recon/","Norad/Gen/","Norad/Recon/",]
+    converters = [convert_GEN_RAD_root_to_pkl,convert_RECON_RAD_root_to_pkl,
+                   convert_GEN_NORAD_root_to_pkl,convert_RECON_NORAD_root_to_pkl]
+    data_paths = ["Rad/Gen/","Rad/Recon/","Norad/Gen/","Norad/Recon/"]
 
 
 
     for index,dpath in enumerate(data_paths):
         data_step = 1
-        #datatype = data_types[index]
 
 
         #print("On path {}".format(dpath))
@@ -115,6 +113,8 @@ if __name__ == "__main__":
                     jobs_list.append(f)
                     print(f)
             jobs_list = sorted(jobs_list)
+
+            ic(jobs_list)
 
             size_gen_chunks = 4000000 #Change this, depending on how big the gen dataset is
 

@@ -118,7 +118,7 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
         print(new_plot_title)
         
 
-        print(pics_dir)
+        #print(pics_dir)
         if not os.path.exists(pics_dir):
             os.makedirs(pics_dir)
 
