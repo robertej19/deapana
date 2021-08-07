@@ -289,7 +289,8 @@ if __name__ == "__main__":
 
     #filename = "lund_event_pkls/pi0_gen108.lund.pkl_events.pkl"
     #filename = "TEST3_real_output_aao_norad.lund_events.pkl"
-    dir = "lund_event_pkls/"
+    #dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/lunds/"
+    dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/filts/forplots/"
     #dir = "testgen/"
     #plotter(filename)
     plotter(dir)

@@ -100,7 +100,8 @@ def convert_lund_dir_to_dfs(data_dir,out_dir):
     print("Saved pkl files to {}\n".format(out_dir))
 
 if __name__ == "__main__":
-    data_dir = "/mnt/c/Users/rober/Documents/jlab_transfers/1_Generated_Events/"
-    out_dir = "generator_pkls/"
+    data_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/lunds/"
+    out_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/panda_lunds/"
+  
     convert_lund_dir_to_dfs(data_dir,out_dir)
 

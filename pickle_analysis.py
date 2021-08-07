@@ -22,6 +22,7 @@ from utils.utils import readFile
 from utils import make_histos
 from utils import histo_plotting
 from utils import filestruct
+pd.set_option('mode.chained_assignment', None)
 
 M = 0.938272081 # target mass
 me = 0.5109989461 * 0.001 # electron mass
@@ -64,7 +65,6 @@ def makeGenDVpi0vars(df_epgg):
     df_epgg.loc[:, 'GenGtheta2'] = getTheta(gam2)
     df_epgg.loc[:, 'GenGphi2'] = getPhi(gam2)
 
-    print(1)
     pi0 = vecAdd(gam, gam2)
     VGS = [-df_epgg['GenEpx'], -df_epgg['GenEpy'], pbeam - df_epgg['GenEpz']]
     v3l = cross(beam, ele)
@@ -80,7 +80,7 @@ def makeGenDVpi0vars(df_epgg):
 
     df_epgg.loc[:, 'GenMpx'], df_epgg.loc[:, 'GenMpy'], df_epgg.loc[:, 'GenMpz'] = Vmiss
 
-    print(2)
+    #print(2)
     # binning kinematics
     df_epgg.loc[:,'GenQ2'] = -((ebeam - df_epgg['GenEe'])**2 - mag2(VGS))
     df_epgg.loc[:,'Gennu'] = (ebeam - df_epgg['GenEe'])
@@ -90,22 +90,22 @@ def makeGenDVpi0vars(df_epgg):
     df_epgg.loc[:,'GenMPt'] = np.sqrt((df_epgg["GenEpx"] + df_epgg["GenPpx"] + df_epgg["GenGpx"] + df_epgg["GenGpx2"])**2 +
                                 (df_epgg["GenEpy"] + df_epgg["GenPpy"] + df_epgg["GenGpy"] + df_epgg["GenGpy2"])**2)
 
-    print(3)
+    #print(3)
     # trento angles
     df_epgg.loc[:,'Genphi1'] = angle(v3l, v3h)
-    print(3.1)
+    #print(3.1)
 
     df_epgg.loc[:,'Genphi1'] = np.where(dot(v3l, pro) > 0, 360.0 -
                                 df_epgg['Genphi1'], df_epgg['Genphi1'])
-    print(3.2)
+    #print(3.2)
     
     df_epgg.loc[:,'Genphi2'] = angle(v3l, v3g)
-    print(3.3)
+    #print(3.3)
 
     df_epgg.loc[:,'Genphi2'] = np.where(dot(VGS, cross(v3l, v3g)) <
                                 0, 360.0 - df_epgg['Genphi2'], df_epgg['Genphi2'])
 
-    print(3.4)
+    #print(3.4)
 
     return df_epgg
 
@@ -300,12 +300,13 @@ if __name__ == "__main__":
         #fname0 = "df_test_10M_gen"
         #fname0 = "df_gen_pisamp"
         #fname0 = "merged_Fall_2018_Inbending_gen_10radtest_genONLY"
-        fname0 = "merged_Fall_2018_Inbending_recon_10radtest_recon_gen"
+        #fname0 = "merged_Fall_2018_Inbending_recon_10radtest_recon_gen"
         #fname0 = "df_gen_TEST2"
         #fname0 = "df_in_18_recon_gen"
         if args.cut:
             #df_gen = pd.read_pickle("data/before_cuts/df_gen.pkl")
-            df = pd.read_pickle("data/before_cuts/{}.pkl".format(fname0))
+            #df = pd.read_pickle("data/before_cuts/{}.pkl".format(fname0))
+            df = pd.read_pickle("/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/ACTUAL_Gen_test_norad_gen_genONLY.pkl")
             n = size_gen_chunks  #chunk row size
             ic(df.shape)
             list_df = []
@@ -317,7 +318,7 @@ if __name__ == "__main__":
             for index, df_chunk in enumerate(list_df):
                 print("On DF chunk {}".format(index))
                 df_gen = makeGenDVpi0vars(df_chunk)
-                df_gen.to_pickle("data/after_cuts/gen/{}_with_cuts_{}.pkl".format(fname0,index))
+                #df_gen.to_pickle("data/after_cuts/gen/{}_with_cuts_{}.pkl".format(fname0,index))
                 dfs.append(df_gen)
         else:
             gen_files = os.listdir(gen_path)

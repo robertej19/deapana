@@ -27,6 +27,7 @@ from convert_root_to_pickle import convert_GEN_RAD_root_to_pkl
 from convert_root_to_pickle import convert_RECON_NORAD_root_to_pkl
 from convert_root_to_pickle import convert_RECON_RAD_root_to_pkl
 import pickle_analysis
+pd.set_option('mode.chained_assignment', None)
 
 import random 
 import sys
@@ -54,14 +55,18 @@ fs = filestruct.fs()
 
 if __name__ == "__main__":
 
-    data_paths = ["Rad/Gen/","Rad/Recon/","Norad/Gen/","Norad/Recon/",]
-    converters = [convert_GEN_RAD_root_to_pkl,convert_RECON_RAD_root_to_pkl,
-                    convert_GEN_NORAD_root_to_pkl,convert_RECON_NORAD_root_to_pkl]
+    #data_paths = ["Rad/Gen/","Rad/Recon/","Norad/Gen/","Norad/Recon/",]
+    #converters = [convert_GEN_RAD_root_to_pkl,convert_RECON_RAD_root_to_pkl,
+    #                convert_GEN_NORAD_root_to_pkl,convert_RECON_NORAD_root_to_pkl]
+    #data_types = ["Gen","Recon","Gen","Recon"]
+    data_paths = ["Norad/Recon/","Norad/Gen/"]
 
 
 
     for index,dpath in enumerate(data_paths):
         data_step = 1
+        #datatype = data_types[index]
+
 
         #print("On path {}".format(dpath))
         dirname = '/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Raw_Root_Files/'+dpath
@@ -78,26 +83,25 @@ if __name__ == "__main__":
                 f_path = dirname + f
                 if os.path.isfile(f_path):
                     jobs_list.append(f)
-                    print(f)
             jobs_list = sorted(jobs_list)
             print("Found {} files in jobs directory".format(len(jobs_list)))
 
-            fname = jobs_list[0]
-            tree = converters[index].readFile(dirname+fname)
-            df_gen = converters[index].readEPGG(tree)
+            for fname in jobs_list:
+                print("Processing file {}".format(fname))
+                tree = converters[index].readFile(dirname+fname)
 
-            outname = fname.split(".")[0]
-            if "Recon" in dpath:
-                df_gen, df_rec = converters[index].readEPGG(tree)
-                df_rec.to_pickle(dir_name_before_cuts+outname+"_reconstructed_events.pkl")
-                df_gen.to_pickle(dir_name_before_cuts+outname+"_recon_generated_events.pkl")
-            elif "Gen" in dpath:
-                df_gen = converters[index].readEPGG(tree)
-                df_gen.to_pickle(dir_name_before_cuts+outname+"_all_generated_events.pkl")
+                outname = fname.split(".")[0]
+                if "Recon" in dpath:
+                    df_gen, df_rec = converters[index].readEPGG(tree)
+                    df_rec.to_pickle(dir_name_before_cuts+outname+"_reconstructed_events.pkl")
+                    df_gen.to_pickle(dir_name_before_cuts+"../Gen/"+outname+"_recon_generated_events.pkl")
+                elif "Gen" in dpath:
+                    df_gen = converters[index].readEPGG(tree)
+                    df_gen.to_pickle(dir_name_before_cuts+outname+"_all_generated_events.pkl")
 
-            print(df_gen.shape)
-            print(df_gen.columns)
-            print(df_gen.head(5))
+                    print(df_gen.shape)
+                    print(df_gen.columns)
+                    print(df_gen.head(5))
             data_step += 1
         
         # Now we implement DVEP cuts
@@ -114,41 +118,47 @@ if __name__ == "__main__":
 
             size_gen_chunks = 4000000 #Change this, depending on how big the gen dataset is
 
-            dfs = []
 
-            #if args.cut:
-            if True:
-                
-                fname = jobs_list[0]
-                
+            for fname in jobs_list:
+                dfs = []
 
-                #df_gen = pd.read_pickle("data/before_cuts/df_gen.pkl")
+                ic(fname)
+                datatype = 'Gen' if 'gen' in fname else 'Recon'
                 df = pd.read_pickle(dir_name_before_cuts+fname)
                 n = size_gen_chunks  #chunk row size
                 ic(df.shape)
                 list_df = []
                 for i in range(0,df.shape[0],n):
                     ic(i)
-                    ic(i+n)
+                    #ic(i+n)
                     list_df.append(df[i:i+n])
 
                 for index, df_chunk in enumerate(list_df):
-                    print("On DF chunk {}".format(index))
-                    df_gen = pickle_analysis.makeGenDVpi0vars(df_chunk)
-                    df_gen.to_pickle(dir_name_after_cuts+fname)
-                    dfs.append(df_gen)
+                    #print("On DF chunk {}".format(index))
+                    ic(df_chunk.shape)
+
+                    outname = fname.split(".")[0]+"_{}.pkl".format(index)
+                    print(outname)
+                    if datatype == "Gen":
+                        df_gen = pickle_analysis.makeGenDVpi0vars(df_chunk)
+                        df_gen.to_pickle(dir_name_after_cuts+outname)
+                        dfs.append(df_gen)
+                    elif datatype == "Recon":
+                        df_recon_pi0vars = pickle_analysis.makeDVpi0vars(df_chunk)
+                        df_recon = pickle_analysis.cutDVpi(df_recon_pi0vars)
+                        df_recon.to_pickle(dir_name_after_cuts+fname)
+                        ic(df_recon)
+                        dfs.append(df_recon)
 
 
-            df = dfs[0]
-            datatype = "Gen"
+                df = dfs[0]
 
-            histo_plotting.make_all_histos(df,datatype=datatype,
-                hists_2d=True,hists_1d=True,hists_overlap=False,
-                saveplots=True,output_dir=dir_name_after_cuts+fname.split(".")[0]+"/")
+                histo_plotting.make_all_histos(df,datatype=datatype,
+                    hists_2d=True,hists_1d=True,hists_overlap=False,
+                    saveplots=True,output_dir=dir_name_after_cuts+fname.split(".")[0]+"/")
             # histo_plotting.make_all_histos(df,datatype=datatype,
             #     hists_2d=True,hists_1d=True,hists_overlap=False,
             #     saveplots=True,output_dir=dir_name_after_cuts+fname.split(".")[0]+"/hist_1D/")
-            sys.exit()
             #print("Found {} files in jobs directory".format(len(jobs_list)))
 
 

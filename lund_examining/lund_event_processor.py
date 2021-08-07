@@ -69,6 +69,7 @@ def calculate_kinematics(event_df):
     pho2_4mom = (photon2["E_GeV"].values[0],photon2["mom_x"].values[0],photon2["mom_y"].values[0],photon2["mom_z"].values[0])
 
 
+
     ic(e_4mom)
     ic(Ebeam_4mom)
     ic(pro_4mom)
@@ -83,7 +84,7 @@ def calculate_kinematics(event_df):
     nu = virtual_gamma[0]
     xB = Q2/(2*pro_mass*nu)
     W2 = calc_inv_mass_squared(vec_subtract(vec_add(Ebeam_4mom,(pro_mass,0,0,0)),e_4mom))
-    print("W2 is: {}".format(W2))
+    #print("W2 is: {}".format(W2))
 
     pion_4mom = vec_add(pho1_4mom,pho2_4mom)
     ic(pion_4mom)
@@ -134,7 +135,7 @@ def process_lund_into_events(df,run_num):
         q2,xb,t,phi,Eprime = calculate_kinematics(event_dataframe)
 
         events_list.append([run_num,event_num,lumi,heli,
-            Ebeam,Eprime,q2,xb,t,phi])
+            Ebeam,Eprime,q2,xb,t,phi,e_px,e_py,e_pz])
     
     return events_list
 
@@ -284,8 +285,9 @@ if __name__ == "__main__":
     # out_dir = "./"
 
 
-    ata_dir = "generator_pkls/"
-    out_dir = "lund_event_pkls/"
+    #data_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/lunds/"
+    data_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/filts/"
+    out_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/filts/"
     #df = convert_lund_dir_to_dfs(data_dir,out_dir)
     
     get_events_from_lunds(data_dir,out_dir)
