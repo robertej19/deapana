@@ -58,10 +58,21 @@ def get_counts(dir_name,file_name):
 
     ic(df)
     ic(df.columns)
-    xb_ranges_test =  [-1000,0.4,1000.0]
-    q2_ranges_test =  [-1.0,5.0,15000.0]
-    t_ranges_test =  [-10,1,1200]
-    phi_ranges_test =  [-100000,90,180,270,360000]
+
+    #Use this to be sure not to exlclude any ranges!
+    # xb_ranges_test =  [-1000,0.4,1000.0]
+    # q2_ranges_test =  [-1.0,5.0,15000.0]
+    # t_ranges_test =  [-10,1,1200]
+    # phi_ranges_test =  [-100000,90,180,270,360000]
+
+    xb_ranges_test =  [0,0.1,0.15,0.2,0.25,0.3,0.38,0.48,0.58,0.68,0.9]
+    q2_ranges_test =  [1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8,10,12]
+    t_ranges_test =  [0,0.9,0.15,0.20,0.30,0.40,0.60,1.00,1.50,2,3,5,10]
+    phi_ranges_test =  [0,18,36,54,72,90,
+                        108,126,144,162,180,
+                        198,216,234,252,270,
+                        288,306,324,342,360]
+
 
     # xb_ranges_test =  [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
     # q2_ranges_test =  [1,2,3,4,5,6,7,8,9,10,11]

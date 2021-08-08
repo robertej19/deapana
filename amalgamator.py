@@ -172,7 +172,11 @@ if __name__ == "__main__":
     df_0['NoradGenTot'] = df_0.iloc[:,idx].sum(axis=1)
 
     ic(df_0.sum(axis=0))
+    ic(df_0.columns)
+    df_out = df_0[['ave_q','ave_x','ave_t','ave_p','NoradGenTot','NoradRecon','RadGenTot','RadRecon']].copy()
+    ic(df_out)
 
+    df_out.to_pickle("/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/After_Cuts/Amalgamated/"+"all_comb.pkl")
         # for file_name in jobs_list:
         #      get_counts(dirname,file_name)
             
