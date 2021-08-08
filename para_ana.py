@@ -141,7 +141,9 @@ if __name__ == "__main__":
                     print(outname)
                     if datatype == "Gen":
                         df_gen = pickle_analysis.makeGenDVpi0vars(df_chunk)
-                        df_gen.to_pickle(dir_name_after_cuts+outname)
+                        ic(df_gen.shape)
+
+                        #df_gen.to_pickle(dir_name_after_cuts+outname)
                         dfs.append(df_gen)
                     elif datatype == "Recon":
                         df_recon_pi0vars = pickle_analysis.makeDVpi0vars(df_chunk)
