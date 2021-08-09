@@ -78,5 +78,6 @@ for q in q_vals:
                 #plt.show()
                 outname = "{}_v_{}_{:.1f}_{:.1f}_{:.1f}.pdf".format(d1,d2,q,x,t)
                 plt.savefig(base_dir + "plots/"+outname)
+                plt.close()
                 #ic(df_2)
 
