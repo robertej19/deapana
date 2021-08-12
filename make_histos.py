@@ -37,6 +37,7 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
     else:
         ax.set_ylabel("{} ({})".format(y_name,units[1]))
 
+
     plt.hist2d(x_data, y_data, bins =[x_bins, y_bins],
         range=[[xmin,xmax],[ymin,ymax]],norm=mpl.colors.LogNorm())# cmap = plt.cm.nipy_spectral) 
 
@@ -44,8 +45,10 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
     if colorbar:
         plt.colorbar()
 
+
     #plt.tight_layout()  
 
+    #ax.set_yscale('log')
     
     #Generate plot title
     if plot_title == "none":

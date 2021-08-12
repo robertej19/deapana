@@ -4,6 +4,8 @@ import numpy as np
 import argparse
 import os, sys
 from icecream import ic
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from copy import copy
 from utils.utils import dot
@@ -26,7 +28,9 @@ from utils import filestruct
 from utils.fitter import plotPhi_duo
 from utils.fitter import fit_function
 from utils.fitter import getPhiFit
+matplotlib.use('Agg') 
 
+print("at start")
 
 base_dir ="/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/After_Cuts/Amalgamated/"
 

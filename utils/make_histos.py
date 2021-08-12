@@ -70,6 +70,7 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
 def plot_1dhist(x_data,vars,ranges="none",second_x="none",
             saveplot=False,pics_dir="none",plot_title="none",first_color="blue",sci_on=False):
     
+    plot_title = plot_title
     plt.rcParams["font.family"] = "Times New Roman"
     plt.rcParams["font.size"] = "20"
 
@@ -94,14 +95,16 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
     ax.set_ylabel('counts')  
     
     
-    plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color=first_color, label='Raw Counts')# cmap = plt.cm.nipy_spectral) 
-    if second_x != "none":
+    plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color='blue', alpha=0.5, label='Rad')# cmap = plt.cm.nipy_spectral) 
+    if second_x is not "none":
         print("printing second histo")
-        plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='black', label='With Acceptance Corr.')# cmap = plt.cm.nipy_spectral) 
+        plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='red', alpha=0.5, label='Norad')# cmap = plt.cm.nipy_spectral) 
 
 
+    plt.legend()
     #plt.tight_layout()  
 
+    plt.yscale('log')
 
     #Generate plot title
     if plot_title == "none":

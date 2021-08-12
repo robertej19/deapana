@@ -94,12 +94,13 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
     ax.set_ylabel('counts')  
     
     
-    plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color=first_color, label='Raw Counts')# cmap = plt.cm.nipy_spectral) 
+    plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color="blue", alpha = 0.5, label='Rad')# cmap = plt.cm.nipy_spectral) 
     if second_x is not "none":
         print("printing second histo")
-        plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='black', label='With Acceptance Corr.')# cmap = plt.cm.nipy_spectral) 
+        plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='red', alpha = 0.5, label='Norad')# cmap = plt.cm.nipy_spectral) 
 
 
+    plt.legend()
     #plt.tight_layout()  
 
 

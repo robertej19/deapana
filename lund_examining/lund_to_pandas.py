@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np 
-import matplotlib.pyplot as plt 
 import random 
 import sys
 import os, subprocess
@@ -100,8 +99,13 @@ def convert_lund_dir_to_dfs(data_dir,out_dir):
     print("Saved pkl files to {}\n".format(out_dir))
 
 if __name__ == "__main__":
-    data_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/lunds/"
-    out_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/panda_lunds/"
+    #data_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/lunds/"
+    #out_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/panda_lunds/"
   
+    #data_dir = "ex_rad_lund/"
+    data_dir = "ex_norad_lund/"
+    #out_dir = "ex_rad_pd/"
+    out_dir = "ex_norad_pd/"
+
     convert_lund_dir_to_dfs(data_dir,out_dir)
 

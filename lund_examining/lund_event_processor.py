@@ -1,6 +1,7 @@
+import matplotlib
+matplotlib.use('Agg')
 import pandas as pd
 import numpy as np 
-import matplotlib.pyplot as plt 
 import random 
 import sys
 import os, subprocess
@@ -286,10 +287,40 @@ if __name__ == "__main__":
 
 
     #data_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/lunds/"
-    data_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/filts/"
-    out_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/filts/"
+    #data_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/filts/"
+    #out_dir = "/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/filts/"
     #df = convert_lund_dir_to_dfs(data_dir,out_dir)
     
+    data_dir = "ex_rad_pd/EXAMPLERAD4000.lund.pkl"
+    data_dir2 = "ex_norad_pd/EXAMPLENORAD5000.lund.pkl"
+
+    #mass_statement = "Mass_GeV < 0.00052 and Mass_GeV > 0.000499"
+    mass_statement = "Mass_GeV < 0.95 and Mass_GeV > 0.9"
+    df = pd.read_pickle(data_dir)
+    ic(df.head(12))
+    df = df.query(mass_statement)
+
+    #ic(df.columns)
+    #ic(df.head(4))
+
+    vars = ["Proton Energy Distribution"]
+    x_data = df['E_GeV']
+
+
+    df2 = pd.read_pickle(data_dir2)
+    ic(df2.head(12))
+    df2 = df2.query(mass_statement)
+    df2 = df2.sample(df.shape[0])
+    ic(df2.columns)
+    ic(df2.head(4))
+    x_data_2 = df2['E_GeV']
+
+
+    make_histos.plot_1dhist(x_data,vars,ranges="none",second_x=x_data_2,
+                saveplot=True,pics_dir="./",plot_title=vars[0],first_color="blue",sci_on=False)
+    
+
+    sys.exit()
     get_events_from_lunds(data_dir,out_dir)
     #filename = "TEST3_real_output_aao_norad.lund_events.pkl"
     #plotter(filename)
