@@ -50,45 +50,37 @@ def calc_inv_mass_squared(four_vector):
 def calculate_kinematics(event_df):
     ele = event_df.query("particleID == 11")
     pro = event_df.query("particleID == 2212")
-    ic(ele)
-    ic(pro)
-    photons = event_df.query("particleID == 22")
-    photon1 = photons.head(n=1)#This will only work for two photons!
-    photon2 = photons.tail(n=1)#This will only work for two photons!
-    ic(photons)
-    ic(photon1)
+    pion = event_df.query("particleID == 111")
+    photon1 = event_df.query("particleID == 22")
     
 
+    pi_mass = 0.1349768
     e_mass = 0.000511
     pro_mass = 0.938
     Ebeam_4mom = (10.6,0,0,10.6)
     e_4mom = (ele["E_GeV"].values[0],ele["mom_x"].values[0],ele["mom_y"].values[0],ele["mom_z"].values[0])
-    #e_energy = np.sqrt(e_mass**2+np.sum(np.square(e_mom)))
     pro_4mom = (pro["E_GeV"].values[0],pro["mom_x"].values[0],pro["mom_y"].values[0],pro["mom_z"].values[0])
     target_4mom = (pro_mass,0,0,0)
     pho1_4mom = (photon1["E_GeV"].values[0],photon1["mom_x"].values[0],photon1["mom_y"].values[0],photon1["mom_z"].values[0])
-    pho2_4mom = (photon2["E_GeV"].values[0],photon2["mom_x"].values[0],photon2["mom_y"].values[0],photon2["mom_z"].values[0])
+    pion_4mom = (pion["E_GeV"].values[0],pion["mom_x"].values[0],pion["mom_y"].values[0],pion["mom_z"].values[0])
 
-
-
-    ic(e_4mom)
-    ic(Ebeam_4mom)
-    ic(pro_4mom)
     Eprime = e_4mom[0]
-    ic(Eprime)
 
+    initial_e_vec = vec_add(Ebeam_4mom,pho1_4mom)
     virtual_gamma = vec_subtract(Ebeam_4mom,e_4mom)
+    virtual_gamma_alt = vec_subtract(initial_e_vec,e_4mom)
+
     ic(virtual_gamma)
     
     #Calculate kinematic quantities of interest
     Q2 = -1*calc_inv_mass_squared(virtual_gamma)
+    Q2_alt = -1*calc_inv_mass_squared(virtual_gamma_alt)
     nu = virtual_gamma[0]
     xB = Q2/(2*pro_mass*nu)
     W2 = calc_inv_mass_squared(vec_subtract(vec_add(Ebeam_4mom,(pro_mass,0,0,0)),e_4mom))
-    #print("W2 is: {}".format(W2))
+    #W2_alt = calc_inv_mass_squared(vec_subtract(vec_add(Ebeam_4mom,(pro_mass,0,0,0)),e_4mom))
 
-    pion_4mom = vec_add(pho1_4mom,pho2_4mom)
-    ic(pion_4mom)
+    #print("W2 is: {}".format(W2))
 
     #Calculate t
     #t = (P - P')^2
@@ -113,7 +105,7 @@ def calculate_kinematics(event_df):
     ic.disable()
 
 
-    return Q2, xB, W2,nu,t,phi,Eprime, e_4mom, pro_4mom, pho1_4mom, pho2_4mom
+    return Q2, Q2_alt,xB, W2, nu, t,phi,Eprime, e_4mom, pro_4mom, pion_4mom, pho1_4mom,
 
 
     
@@ -133,15 +125,15 @@ def process_lund_into_events(df,run_num):
         heli = 0
         Ebeam = 10.6
         
-        q2,xb,W2,nu,t,phi,Eprime, e_4mom, pro_4mom, pho1_4mom, pho2_4mom = calculate_kinematics(event_dataframe)
+        q2,Q2_alt,xb,W2, nu, t,phi,Eprime, e_4mom, pro_4mom, pion_4mom, pho1_4mom = calculate_kinematics(event_dataframe)
 
 
         events_list.append([run_num,event_num,lumi,heli,
-            Ebeam,Eprime,q2,xb,W2,nu,t,phi,
+            Ebeam,Eprime,q2,Q2_alt,xb,W2, nu, t,phi,
             e_4mom[0],e_4mom[1],e_4mom[2],e_4mom[3], 
             pro_4mom[0], pro_4mom[1], pro_4mom[2], pro_4mom[3], 
-            pho1_4mom[0], pho1_4mom[1], pho1_4mom[2], pho1_4mom[3], 
-            pho2_4mom[0],pho2_4mom[1],pho2_4mom[2],pho2_4mom[3]])
+            pion_4mom[0],pion_4mom[1],pion_4mom[2],pion_4mom[3],
+            pho1_4mom[0], pho1_4mom[1], pho1_4mom[2], pho1_4mom[3]])
     
     return events_list
 
@@ -164,10 +156,10 @@ def plotter(filename):
 def get_events_from_lunds(data_dir,out_dir):
     data_list = os.listdir(data_dir)
 
-    out_labels = ["run","event","luminosity","helicity","Ebeam","Eprime","q2","xb","W2","nu","t","phi",
+    out_labels = ["run","event","luminosity","helicity","Ebeam","Eprime","q2","Q2_alt","xb","W2","nu","t","phi",
                     "GenEe","GenEpx","GenEpy","GenEpz",
                     "GenPe","GenPpx","GenPpy","GenPpz",
-                    "GenGe","GenGpx","GenGpy","GenGpz",
+                    "GenPie","GenPipx","GenPipy","GenPipz",
                     "GenG2e","GenG2px","GenG2py","GenG2pz"]
     for count,lund_pickle in enumerate(data_list):
         print("on file {} of {}".format(count,len(data_list)))
@@ -330,9 +322,10 @@ if __name__ == "__main__":
     
 
     # sys.exit()
-    data_dir = "ex_norad_pd/"
-    out_dir = "evented_norad/"
-
+    #data_dir = "ex_norad_pd/"
+    #out_dir = "evented_norad/"
+    data_dir = "ex_rad_pd/"
+    out_dir = "evented_rad/"
     get_events_from_lunds(data_dir,out_dir)
     #filename = "TEST3_real_output_aao_norad.lund_events.pkl"
     #plotter(filename)

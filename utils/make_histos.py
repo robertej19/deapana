@@ -9,7 +9,7 @@ from icecream import ic
 
 
 def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-            saveplot=False,pics_dir="none",plot_title="none",
+            saveplot=False,pics_dir="none",plot_title="none",logger=False,
             filename="ExamplePlot",units=["",""]):
     
     plt.rcParams["font.family"] = "Times New Roman"
@@ -67,7 +67,7 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
     else:
         plt.show()
 
-def plot_1dhist(x_data,vars,ranges="none",second_x="none",
+def plot_1dhist(x_data,vars,ranges="none",second_x="none",logger=False,
             saveplot=False,pics_dir="none",plot_title="none",first_color="blue",sci_on=False):
     
     plot_title = plot_title
@@ -89,22 +89,26 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
     x_bins = np.linspace(xmin, xmax, num_xbins) 
 
     # Creating plot
-    fig, ax = plt.subplots(figsize =(10, 7)) 
+    fig, ax = plt.subplots(figsize =(14, 10)) 
         
     ax.set_xlabel(x_name)  
     ax.set_ylabel('counts')  
     
-    
-    plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color='blue', alpha=0.5, label='Rad')# cmap = plt.cm.nipy_spectral) 
+    a="(e-e')$^2$"
+    a2 = "(e+$\gamma$-e')$^2$"
+    b = "rad"
+    b2="norad"
+    plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color='blue', alpha=0.5, label=b)# cmap = plt.cm.nipy_spectral) 
     if second_x is not "none":
         print("printing second histo")
-        plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='red', alpha=0.5, label='Norad')# cmap = plt.cm.nipy_spectral) 
+        plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='red', alpha=0.5, label=b2)# cmap = plt.cm.nipy_spectral) 
 
 
     plt.legend()
     #plt.tight_layout()  
 
-    plt.yscale('log')
+    if logger:
+        plt.yscale('log')
 
     #Generate plot title
     if plot_title == "none":
@@ -126,6 +130,8 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
             os.makedirs(pics_dir)
 
         plt.savefig(pics_dir + new_plot_title+".png")
+        #plt.savefig(pics_dir + new_plot_title+"_linear_scale"+".png")
+
         plt.close()
     else:
         plt.show()

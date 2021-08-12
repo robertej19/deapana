@@ -91,7 +91,7 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",
     x_bins = np.linspace(xmin, xmax, num_xbins) 
 
     # Creating plot
-    fig, ax = plt.subplots(figsize =(10, 7)) 
+    fig, ax = plt.subplots(figsize =(14, 10)) 
         
     ax.set_xlabel(x_name)  
     ax.set_ylabel('counts')  
