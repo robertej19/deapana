@@ -11,8 +11,8 @@ import shutil
 from PIL import Image, ImageDraw, ImageFont
 #This project
 #import utils.make_histos
-#import matplotlib
-#matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 from utils import make_histos
 
 from utils.utils import dot
@@ -28,6 +28,44 @@ from utils.utils import getPhi
 from utils.utils import getTheta
 from utils.utils import getEnergy
 from utils.utils import readFile
+
+
+df = pd.read_pickle("reals/F18_All_DVPi0_Events.pkl")
+ic(df.columns)
+ic(df.phi2)
+vars = ["\phi"]
+ranges = "none"
+plot_dir = "corrs/"
+plot_title = "phi1 vs phi2 diff"
+
+make_histos.plot_1dhist(df.phi1-df.phi2,vars,ranges=ranges,second_x=df.phi1-df.phi2,logger=True,
+      saveplot=True,pics_dir=plot_dir,plot_title=plot_title,first_color="blue",sci_on=False)
+
+plot_title = "Difference between $\phi$ Angle Definitions vs. Proton Momentum, F18 Inbending"
+
+var_names = ["Difference between $\phi$ Angle Definitions","Proton Momentum"]
+ranges = [[0,180,180],[0,6,100]]
+
+df.loc[:,'phi_trent_diff'] = df.phi1-df.phi2
+
+# df.loc[:,'phi_trent_diff'] = df['phi_trent_diff'] + 360 if (df['phi_trent_diff'] < -180)
+# df.loc[:,'phi_trent_diff'] = df['phi_trent_diff'] - 360 if (df['phi_trent_diff'] > 180 )
+
+for idx, row in df.iterrows():
+  if row['phi_trent_diff'] < -180:
+    df.loc[idx, 'phi_trent_diff'] = df.loc[idx, 'phi_trent_diff']+360
+  if row['phi_trent_diff'] > 180:
+    df.loc[idx, 'phi_trent_diff'] = df.loc[idx, 'phi_trent_diff']-360
+
+df.loc[:,'phi_trent_diff'] = np.sqrt(np.square(df["phi_trent_diff"]))
+
+make_histos.plot_2dhist(df.phi_trent_diff,df.Pp,var_names,ranges,colorbar=True,
+            saveplot=True,pics_dir=plot_dir,plot_title=plot_title,
+            filename="ElectronVPhoton",units=["Deg.","GeV"])
+
+
+
+sys.exit()
 #df_rad = pd.read_pickle("/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/Test/panda_lunds/test_noradlund.lund.pkl")
 
 #df_norad = pd.read_pickle("lund_examining/evented_norad/100K_norad_example.lund.pkl_events.pkl")

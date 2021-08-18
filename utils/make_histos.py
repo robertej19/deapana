@@ -13,7 +13,7 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
             filename="ExamplePlot",units=["",""]):
     
     plt.rcParams["font.family"] = "Times New Roman"
-    plt.rcParams["font.size"] = "20"
+    plt.rcParams["font.size"] = "30"
     # Initalize parameters
     x_name = var_names[0]
     y_name = var_names[1]
@@ -27,7 +27,7 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
     y_bins = np.linspace(ymin, ymax, num_ybins) 
 
     # Creating plot
-    fig, ax = plt.subplots(figsize =(10, 7)) 
+    fig, ax = plt.subplots(figsize =(36, 17)) 
     if units[0] == "None":
         ax.set_xlabel("{}".format(x_name))
     else:

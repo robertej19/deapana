@@ -27,7 +27,7 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
     y_bins = np.linspace(ymin, ymax, num_ybins) 
 
     # Creating plot
-    fig, ax = plt.subplots(figsize =(10, 7)) 
+    fig, ax = plt.subplots(figsize =(16, 11)) 
     if units[0] == "None":
         ax.set_xlabel("{}".format(x_name))
     else:
