@@ -9,7 +9,7 @@ from icecream import ic
 
 
 def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
-            saveplot=False,pics_dir="none",plot_title="none",logger=False,
+            saveplot=False,pics_dir="none",plot_title="none",logger=False,first_label="rad",
             filename="ExamplePlot",units=["",""]):
     
     plt.rcParams["font.family"] = "Times New Roman"
@@ -67,7 +67,7 @@ def plot_2dhist(x_data,y_data,var_names,ranges,colorbar=True,
     else:
         plt.show()
 
-def plot_1dhist(x_data,vars,ranges="none",second_x="none",logger=False,
+def plot_1dhist(x_data,vars,ranges="none",second_x="none",logger=False,first_label="rad",second_label="norad",
             saveplot=False,pics_dir="none",plot_title="none",first_color="blue",sci_on=False):
     
     plot_title = plot_title
@@ -94,14 +94,14 @@ def plot_1dhist(x_data,vars,ranges="none",second_x="none",logger=False,
     ax.set_xlabel(x_name)  
     ax.set_ylabel('counts')  
     
-    a="(e-e')$^2$"
-    a2 = "(e+$\gamma$-e')$^2$"
+    a = first_label
+    a2 = second_label
     b = "rad"
     b2="norad"
-    plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color='blue', alpha=0.5, label=b)# cmap = plt.cm.nipy_spectral) 
+    plt.hist(x_data, bins =x_bins, range=[xmin,xmax], color='blue', alpha=0.5, label=a)# cmap = plt.cm.nipy_spectral) 
     if second_x is not "none":
         print("printing second histo")
-        plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='red', alpha=0.5, label=b2)# cmap = plt.cm.nipy_spectral) 
+        plt.hist(second_x, bins =x_bins, range=[xmin,xmax],color='red', alpha=0.5, label=a2)# cmap = plt.cm.nipy_spectral) 
 
 
     plt.legend()

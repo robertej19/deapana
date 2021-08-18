@@ -53,7 +53,7 @@ def get_counts(dir_name,file_name):
     sim_type = "Recon/" if "Recon/" in dir_name else "Gen/"
     dir_base = "/mnt/d/GLOBUS/CLAS12/simulations/production/"+config+"Counted/"+gen_type+sim_type
 
-
+    sim_type = "Real/"
     df = pd.read_pickle(dir_name+file_name)
 
     ic(df)
@@ -67,12 +67,16 @@ def get_counts(dir_name,file_name):
 
     xb_ranges_test =  [0,0.1,0.15,0.2,0.25,0.3,0.38,0.48,0.58,0.68,0.9]
     q2_ranges_test =  [1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8,10,12]
-    t_ranges_test =  [0,0.9,0.15,0.20,0.30,0.40,0.60,1.00,1.50,2,3,5,10]
+    t_ranges_test =  [0,0.09,0.15,0.20,0.30,0.40,0.60,1.00,1.50,2,3,5,10]
     phi_ranges_test =  [0,18,36,54,72,90,
                         108,126,144,162,180,
                         198,216,234,252,270,
                         288,306,324,342,360]
 
+    # xb_ranges_test =  [0.2,0.25]
+    # q2_ranges_test =  [1.5,2]
+    # t_ranges_test =  [0.20,0.30]
+    # phi_ranges_test =  [108,126]
 
     # xb_ranges_test =  [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
     # q2_ranges_test =  [1,2,3,4,5,6,7,8,9,10,11]
@@ -101,10 +105,15 @@ def get_counts(dir_name,file_name):
                     #print(qmin,qmax,xmin,xmax,tmin,tmax,pmin,pmax)
                     if sim_type == "Gen/":
                         q_statement = "GenQ2 >= {} and GenQ2 < {} and GenxB >= {} and GenxB < {} and Gent >= {} and Gent < {} and Genphi1 >= {} and Genphi1 < {}".format(qmin,qmax,xmin,xmax,tmin,tmax,pmin,pmax)
+                    elif sim_type == "Real/":
+                        q_statement = "Q2 >= {} and Q2 < {} and xB >= {} and xB < {} and t >= {} and t < {} and phi1 >= {} and phi1 < {}".format(qmin,qmax,xmin,xmax,tmin,tmax,pmin,pmax)
                     else:
                         q_statement = "Q2 >= {} and Q2 < {} and xB >= {} and xB < {} and t >= {} and t < {} and phi1 >= {} and phi1 < {}".format(qmin,qmax,xmin,xmax,tmin,tmax,pmin,pmax)
-                        
+
                     df_b = df.query(q_statement)
+                    #df_b.to_pickle("smallbinana/"+file_name+".pkl")
+                    #ic(df_b)
+    #                 sys.exit()
                     count = df_b.shape[0]
                     ave_q.append((qmax+qmin)/2)
                     ave_x.append((xmax+xmin)/2)
@@ -115,14 +124,14 @@ def get_counts(dir_name,file_name):
     df_counts = pd.DataFrame(list(zip(ave_q,ave_x,ave_t,ave_p,counts)),columns=['ave_q','ave_x','ave_t','ave_p','counts'])
     ic(df_counts)
 
-
+    ic(df_counts.sum(axis=0))
 
     output_file_name = file_name.split(".")[0]+"_counted.pkl"
 
     print("Saving DF to {}".format(dir_base+output_file_name))
 
-    df_counts.to_pickle(dir_base+output_file_name)
-
+    #df_counts.to_pickle(dir_base+output_file_name)
+    df_counts.to_pickle(dirname + output_file_name)
 
 if __name__ == "__main__":
 
@@ -131,21 +140,23 @@ if __name__ == "__main__":
     fname = "5000_20210731_2317_norad_recon_reconstructed_events.pkl"
 
 
+    dirname = "reals/"
+    fname = "F18_All_DVPi0_Events.pkl"
+    get_counts(dirname,fname)
 
+    # #get_counts(dir_name_after_cuts,fname)
+    # data_paths = ["Rad/Gen/","Rad/Recon/","Norad/Gen/","Norad/Recon/"]
 
-    #get_counts(dir_name_after_cuts,fname)
-    data_paths = ["Rad/Gen/","Rad/Recon/","Norad/Gen/","Norad/Recon/"]
+    # for index,dpath in enumerate(data_paths):
+    #     print(dpath)
+    #     dirname= '/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/After_Cuts/'+dpath
 
-    for index,dpath in enumerate(data_paths):
-        print(dpath)
-        dirname= '/mnt/d/GLOBUS/CLAS12/simulations/production/Fall_2018_Inbending/After_Cuts/'+dpath
+    #     jobs_list = []
+    #     for f in os.listdir(dirname):
+    #         f_path = dirname + f
+    #         if os.path.isfile(f_path):
+    #             jobs_list.append(f)
 
-        jobs_list = []
-        for f in os.listdir(dirname):
-            f_path = dirname + f
-            if os.path.isfile(f_path):
-                jobs_list.append(f)
-
-        for file_name in jobs_list:
-            get_counts(dirname,file_name)
+    #     for file_name in jobs_list:
+    #         get_counts(dirname,file_name)
             
